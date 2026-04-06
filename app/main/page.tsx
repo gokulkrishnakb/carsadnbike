@@ -1,233 +1,232 @@
+"use client";
+
 import Link from "next/link";
-import { ArrowRight, Shield, Zap, MessageSquare, Car, Bike, Truck, Package, TrendingUp, Star, CheckCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { SearchBar } from "@/features/search/search-bar";
+import { Suspense, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { Search, Car, Bike, Truck, Package, ChevronLeft, ChevronRight, Shield, MessageSquare, TrendingUp, ArrowRight, Zap } from "lucide-react";
+import { listingsService } from "@/services/listings.service";
+import { ListingCard } from "@/features/listings/listing-card";
+import { ListingCardSkeleton } from "@/components/ui/skeleton";
+import { formatPrice } from "@/lib/utils";
+import Image from "next/image";
+import { imageUrl } from "@/lib/utils";
 
-const stats = [
-  { label: "Vehicles listed", value: "24K+", icon: Car },
-  { label: "Active buyers", value: "180K", icon: TrendingUp },
-  { label: "Deals closed", value: "9.2K", icon: CheckCircle },
-  { label: "Verified dealers", value: "340", icon: Star },
+const CATEGORIES = [
+  { icon: Car,     label: "Cars",   value: "car",   count: "1,000+", color: "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:border-blue-400" },
+  { icon: Bike,    label: "Bikes",  value: "bike",  count: "1,000+", color: "bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100 hover:border-violet-400" },
+  { icon: Truck,   label: "Trucks", value: "truck", count: "1,000+", color: "bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100 hover:border-orange-400" },
+  { icon: Package, label: "Vans",   value: "van",   count: "1,000+", color: "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 hover:border-emerald-400" },
 ];
 
-const categories = [
-  { icon: Car, label: "Cars", href: "/main/listings?type=car", color: "bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 hover:border-blue-300" },
-  { icon: Bike, label: "Bikes", href: "/main/listings?type=bike", color: "bg-violet-50 text-violet-600 border-violet-200 hover:bg-violet-100 hover:border-violet-300" },
-  { icon: Truck, label: "Trucks", href: "/main/listings?type=truck", color: "bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100 hover:border-orange-300" },
-  { icon: Package, label: "Vans", href: "/main/listings?type=van", color: "bg-green-50 text-green-600 border-green-200 hover:bg-green-100 hover:border-green-300" },
+const TRUST_ITEMS = [
+  { icon: Shield,        title: "Verified Listings",    desc: "Every ad reviewed for authenticity" },
+  { icon: MessageSquare, title: "Direct Seller Chat",   desc: "No middleman — talk directly" },
+  { icon: Zap,           title: "Post in 60 Seconds",   desc: "Simple, fast listing process" },
+  { icon: TrendingUp,    title: "4,000+ Active Ads",    desc: "New vehicles added daily" },
 ];
 
-const features = [
-  {
-    icon: Zap,
-    title: "List in 60 seconds",
-    body: "Photos, specs, and price — publish your vehicle and reach thousands of buyers instantly.",
-    color: "bg-yellow-50 border-yellow-100",
-    iconColor: "text-yellow-600",
-  },
-  {
-    icon: MessageSquare,
-    title: "Real-time negotiation",
-    body: "Chat directly with buyers and sellers. Encrypted messages, instant delivery, zero middleman.",
-    color: "bg-blue-50 border-blue-100",
-    iconColor: "text-blue-600",
-  },
-  {
-    icon: Shield,
-    title: "AI fraud protection",
-    body: "Every listing is validated by our AI engine. Trust scores and identity checks on all accounts.",
-    color: "bg-green-50 border-green-100",
-    iconColor: "text-green-600",
-  },
-];
+function FeaturedCarousel({ listings }: { listings: any[] }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-export default function HomePage() {
+  const scroll = (dir: "left" | "right") => {
+    if (!scrollRef.current) return;
+    scrollRef.current.scrollBy({ left: dir === "left" ? -300 : 300, behavior: "smooth" });
+  };
+
   return (
-    <div className="space-y-24 pb-20">
-
-      {/* ── Hero ──────────────────────────────────────────── */}
-      <section className="relative -mx-6 px-6 pt-16 sm:pt-24 pb-14 sm:pb-20 overflow-hidden hero-bg">
-        {/* Decorative circles */}
-        <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-blue-500/5 pointer-events-none" />
-        <div className="absolute -bottom-16 -left-16 w-64 h-64 rounded-full bg-violet-500/5 pointer-events-none" />
-
-        <div className="relative max-w-3xl mx-auto text-center">
-          {/* Eyebrow */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold tracking-widest uppercase mb-8 shadow-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-            Premium Vehicle Marketplace
+    <div className="relative group">
+      <div
+        ref={scrollRef}
+        className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 scroll-smooth"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+      >
+        {listings.map((listing) => (
+          <div key={listing.id} className="snap-start shrink-0 w-[280px] sm:w-[300px]">
+            <ListingCard listing={listing} />
           </div>
+        ))}
+      </div>
+      <button
+        onClick={() => scroll("left")}
+        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 w-9 h-9 bg-white border border-slate-200 rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-slate-50 opacity-0 group-hover:opacity-100 transition-opacity z-10 hidden sm:flex"
+        aria-label="Scroll left"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </button>
+      <button
+        onClick={() => scroll("right")}
+        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 w-9 h-9 bg-white border border-slate-200 rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-slate-50 opacity-0 group-hover:opacity-100 transition-opacity z-10 hidden sm:flex"
+        aria-label="Scroll right"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </button>
+    </div>
+  );
+}
 
-          {/* Headline */}
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-slate-900 tracking-[-0.04em] leading-[0.92] mb-6">
-            Find your<br />
-            <span className="text-gradient">perfect vehicle.</span>
+function HomeInner() {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+
+  const { data: featuredData, isLoading: featuredLoading } = useQuery({
+    queryKey: ["home-featured"],
+    queryFn: () => listingsService.list({ status: "active", size: 10 }),
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const { data: recentData, isLoading: recentLoading } = useQuery({
+    queryKey: ["home-recent"],
+    queryFn: () => listingsService.list({ status: "active", size: 6, page: 2 }),
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const featuredListings = featuredData?.items ?? [];
+  const recentListings = recentData?.items ?? [];
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (query.trim()) params.set("q", query.trim());
+    router.push(`/main/listings?${params.toString()}`);
+  };
+
+  return (
+    <div className="space-y-12 pb-8">
+      {/* ── Hero ───────────────────────────────────────────── */}
+      <section className="-mx-4 sm:-mx-6 px-4 sm:px-6 py-14 sm:py-20 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 text-white">
+        <div className="max-w-2xl mx-auto text-center">
+          <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-3">4,011 vehicles · Free to browse</p>
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight mb-3">
+            Find Your Perfect<br />
+            <span className="text-blue-400">Vehicle Today</span>
           </h1>
-
-          <p className="text-lg sm:text-xl text-slate-500 max-w-xl mx-auto mb-10 leading-relaxed font-normal">
-            Thousands of verified listings from trusted sellers. Real-time chat, instant offers, zero hassle.
+          <p className="text-slate-400 text-sm sm:text-base mb-8 max-w-md mx-auto">
+            Browse cars, bikes, trucks and vans from verified private sellers and dealers across the US.
           </p>
 
           {/* Search */}
-          <div className="max-w-2xl mx-auto mb-8 px-0 sm:px-4">
-            <SearchBar
-              placeholder="Search by make, model, or keyword…"
-              className="shadow-lg shadow-blue-500/10"
-            />
-          </div>
+          <form onSubmit={handleSearch} className="flex gap-2 max-w-xl mx-auto">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Make, model, or keyword…"
+                className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400 text-base font-medium"
+                aria-label="Search vehicles"
+              />
+            </div>
+            <button
+              type="submit"
+              className="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-3.5 rounded-xl transition-colors shrink-0"
+            >
+              Search
+            </button>
+          </form>
+        </div>
+      </section>
 
-          {/* CTA buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
-            <Link href="/main/listings">
-              <Button size="lg" className="gap-2 px-7 rounded-full">
-                Browse vehicles <ArrowRight className="h-4 w-4" />
-              </Button>
+      {/* ── Categories ─────────────────────────────────────── */}
+      <section>
+        <h2 className="text-lg font-bold text-slate-900 mb-4">Browse by category</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {CATEGORIES.map(({ icon: Icon, label, value, count, color }) => (
+            <Link
+              key={value}
+              href={`/main/listings?type=${value}`}
+              className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all hover:shadow-md ${color}`}
+            >
+              <div className="w-10 h-10 rounded-xl bg-white/70 flex items-center justify-center shrink-0">
+                <Icon className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-bold text-sm">{label}</p>
+                <p className="text-xs opacity-70 font-medium">{count}</p>
+              </div>
             </Link>
-            <Link href="/main/listings/new">
-              <Button size="lg" variant="secondary" className="px-7 rounded-full">
-                Sell your vehicle
-              </Button>
-            </Link>
-          </div>
+          ))}
+        </div>
+      </section>
 
-          {/* Category shortcuts */}
-          <div className="flex items-center justify-center gap-2.5 flex-wrap">
-            {categories.map(({ icon: Icon, label, href, color }) => (
-              <Link
-                key={label}
-                href={href}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-all shadow-sm ${color}`}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {label}
-              </Link>
+      {/* ── Featured ───────────────────────────────────────── */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-slate-900">Featured vehicles</h2>
+          <Link href="/main/listings" className="text-sm text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1">
+            View all <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+        {featuredLoading ? (
+          <div className="flex gap-4 overflow-hidden">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="shrink-0 w-[280px]"><ListingCardSkeleton /></div>
             ))}
           </div>
-        </div>
+        ) : (
+          <FeaturedCarousel listings={featuredListings} />
+        )}
       </section>
 
-      {/* ── Stats ─────────────────────────────────────────── */}
+      {/* ── Recently added ─────────────────────────────────── */}
       <section>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {stats.map((s) => (
-            <div
-              key={s.label}
-              className="bg-white rounded-2xl border border-slate-200 p-6 text-center shadow-sm hover:shadow-md hover:border-slate-300 transition-all"
-            >
-              <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center mx-auto mb-3">
-                <s.icon className="h-5 w-5 text-blue-600" />
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-slate-900">Recently added</h2>
+          <Link href="/main/listings?sort=created_at_desc" className="text-sm text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1">
+            See more <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+        {recentLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => <ListingCardSkeleton key={i} />)}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {recentListings.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* ── Trust strip ────────────────────────────────────── */}
+      <section className="bg-slate-50 rounded-2xl border border-slate-200 p-6 sm:p-8">
+        <h2 className="text-center text-base font-bold text-slate-900 mb-6">Why CarsAndBikes?</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+          {TRUST_ITEMS.map(({ icon: Icon, title, desc }) => (
+            <div key={title} className="flex flex-col items-center text-center gap-2">
+              <div className="w-11 h-11 rounded-xl bg-blue-600 flex items-center justify-center">
+                <Icon className="h-5 w-5 text-white" />
               </div>
-              <p className="text-3xl font-black text-slate-900 tracking-tight">{s.value}</p>
-              <p className="text-xs text-slate-500 mt-1 font-medium">{s.label}</p>
+              <p className="text-sm font-bold text-slate-900">{title}</p>
+              <p className="text-xs text-slate-500 leading-relaxed">{desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── Features ──────────────────────────────────────── */}
-      <section>
-        <div className="text-center mb-14">
-          <p className="text-xs font-semibold text-blue-600 tracking-widest uppercase mb-3">Why CarsAndBikes</p>
-          <h2 className="text-4xl font-black text-slate-900 tracking-tight mb-4">
-            Built for serious buyers<br />& sellers
-          </h2>
-          <p className="text-slate-500 max-w-md mx-auto text-[15px] leading-relaxed">
-            Everything you need to find, evaluate, and close on your next vehicle — all in one place.
-          </p>
-        </div>
-        <div className="grid sm:grid-cols-3 gap-5">
-          {features.map((f) => (
-            <div
-              key={f.title}
-              className={`rounded-2xl border p-7 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ${f.color}`}
-            >
-              <div className="w-11 h-11 rounded-xl bg-white border border-white/80 flex items-center justify-center mb-5 shadow-sm">
-                <f.icon className={`h-5 w-5 ${f.iconColor}`} />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2 tracking-tight">{f.title}</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">{f.body}</p>
-            </div>
-          ))}
-        </div>
+      {/* ── Post CTA ───────────────────────────────────────── */}
+      <section className="bg-blue-600 rounded-2xl p-8 sm:p-10 text-center text-white">
+        <h2 className="text-2xl font-black mb-2">Ready to sell?</h2>
+        <p className="text-blue-200 text-sm mb-6 max-w-sm mx-auto">
+          Post your vehicle ad for free. Reach thousands of buyers instantly.
+        </p>
+        <Link
+          href="/main/listings/new"
+          className="inline-flex items-center gap-2 bg-white text-blue-700 hover:bg-blue-50 font-bold px-8 py-3.5 rounded-xl transition-colors"
+        >
+          Post Free Ad <ArrowRight className="h-4 w-4" />
+        </Link>
       </section>
-
-      {/* ── How it works ──────────────────────────────────── */}
-      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="grid md:grid-cols-2 gap-0">
-          {/* Left: content */}
-          <div className="p-10 sm:p-14">
-            <p className="text-xs font-semibold text-blue-600 tracking-widest uppercase mb-4">How it works</p>
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-8">
-              Simple, fast,<br />and secure.
-            </h2>
-            <div className="space-y-7">
-              {[
-                { step: "01", title: "Create your account", body: "Sign up free in seconds. No credit card required." },
-                { step: "02", title: "Browse or list vehicles", body: "Find your dream car or list your vehicle in under a minute." },
-                { step: "03", title: "Chat and close the deal", body: "Negotiate securely in real-time and complete your transaction." },
-              ].map((s) => (
-                <div key={s.step} className="flex gap-5">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-600 text-white font-black text-sm flex items-center justify-center shadow-[0_2px_8px_rgba(37,99,235,0.35)]">
-                    {s.step}
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900 mb-1">{s.title}</h3>
-                    <p className="text-sm text-slate-500 leading-relaxed">{s.body}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          {/* Right: decorative */}
-          <div className="gradient-brand relative overflow-hidden hidden md:flex items-center justify-center p-14">
-            <div className="absolute inset-0 dot-grid opacity-30" />
-            <div className="relative text-center">
-              <div className="w-20 h-20 rounded-2xl bg-white/15 border border-white/20 flex items-center justify-center mx-auto mb-6 backdrop-blur-sm">
-                <Car className="h-10 w-10 text-white" />
-              </div>
-              <p className="text-white font-black text-2xl tracking-tight mb-3">Ready to start?</p>
-              <p className="text-blue-200 text-sm leading-relaxed mb-6">Join 180,000+ buyers and sellers on the #1 vehicle marketplace.</p>
-              <Link href="/auth/register">
-                <Button size="lg" className="bg-white text-blue-700 hover:bg-blue-50 rounded-full px-8 font-bold shadow-lg">
-                  Get started free
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── CTA ───────────────────────────────────────────── */}
-      <section className="relative overflow-hidden rounded-3xl gradient-brand text-white p-12 sm:p-16 text-center shadow-xl">
-        <div className="absolute inset-0 dot-grid opacity-20" />
-        <div className="relative">
-          <h2 className="text-4xl sm:text-5xl font-black tracking-[-0.03em] mb-4">
-            Ready for your next vehicle?
-          </h2>
-          <p className="text-blue-200 mb-10 text-lg max-w-xl mx-auto leading-relaxed">
-            Join 180,000+ buyers and sellers. Free to sign up, no credit card needed.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/auth/register">
-              <Button
-                size="xl"
-                className="bg-white text-blue-700 hover:bg-blue-50 shadow-[0_4px_20px_rgba(0,0,0,0.20)] rounded-full px-10 font-bold"
-              >
-                Create free account
-              </Button>
-            </Link>
-            <Link href="/main/listings">
-              <Button
-                size="xl"
-                className="bg-white/10 text-white border border-white/25 hover:bg-white/20 rounded-full px-10"
-              >
-                Browse listings
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense>
+      <HomeInner />
+    </Suspense>
   );
 }

@@ -3,8 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { MapPin, Gauge, Calendar, Edit2, Trash2, Heart } from "lucide-react";
+import { MapPin, Gauge, Edit2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { listingsService } from "@/services/listings.service";
@@ -13,14 +12,8 @@ import type { Listing } from "@/types";
 
 const conditionVariant = {
   new: "success",
-  used: "default",
-  certified: "amber",
-} as const;
-
-const conditionLabel = {
-  new: "New",
-  used: "Used",
-  certified: "CPO",
+  used: "secondary",
+  certified: "warning",
 } as const;
 
 export function ListingCard({
@@ -48,117 +41,87 @@ export function ListingCard({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.4) }}
-    >
-      <Link href={`/main/listings/${listing.id}`} className="block group">
-        <article className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:-translate-y-1.5 hover:border-slate-300 transition-all duration-300 shadow-sm">
-
-          {/* Image */}
-          <div className="relative aspect-[4/3] bg-slate-100 overflow-hidden">
-            {thumb ? (
-              <Image
-                src={imageUrl(thumb)}
-                alt={listing.title}
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              />
-            ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-                <span className="text-6xl font-black text-slate-300 tracking-tighter">
-                  {listing.make[0]}
-                </span>
-                <span className="text-xs text-slate-400 font-medium mt-1">{listing.make}</span>
-              </div>
-            )}
-
-            {/* Sold overlay */}
-            {listing.status === "sold" && (
-              <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center">
-                <span className="bg-white text-slate-900 font-bold text-sm px-5 py-2 rounded-full shadow-lg">
-                  SOLD
-                </span>
-              </div>
-            )}
-
-            {/* Gradient overlay at bottom */}
-            <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
-
-            {/* Top badges */}
-            <div className="absolute top-3 left-3">
-              <Badge variant={conditionVariant[listing.condition]}>
-                {conditionLabel[listing.condition]}
-              </Badge>
+    <Link href={`/main/listings/${listing.id}`} className="block group">
+      <article className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:border-slate-300 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 shadow-sm">
+        {/* Image */}
+        <div className="relative aspect-[4/3] bg-slate-100 overflow-hidden">
+          {thumb ? (
+            <Image
+              src={imageUrl(thumb)}
+              alt={listing.title}
+              fill
+              className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-slate-100">
+              <span className="text-4xl font-black text-slate-300">{listing.make[0]}</span>
             </div>
+          )}
 
-            {/* Wishlist */}
-            <button
-              onClick={(e) => e.preventDefault()}
-              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 hover:bg-white"
-            >
-              <Heart className="h-4 w-4 text-slate-500 hover:text-red-500 transition-colors" />
-            </button>
-
-            {/* Year badge on bottom */}
-            <div className="absolute bottom-2.5 left-3">
-              <span className="text-[11px] font-bold text-white/90 tracking-wide">{listing.year}</span>
+          {listing.status === "sold" && (
+            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+              <span className="bg-white text-black font-black text-sm px-4 py-1.5 tracking-widest">
+                SOLD
+              </span>
             </div>
+          )}
+
+          <div className="absolute top-2.5 left-2.5">
+            <Badge variant={conditionVariant[listing.condition]}>
+              {listing.condition === "certified" ? "CPO" : listing.condition.charAt(0).toUpperCase() + listing.condition.slice(1)}
+            </Badge>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-4">
+          {/* Price — primary */}
+          <p className="text-2xl font-black text-slate-900 tracking-tight mb-1">
+            {formatPrice(listing.price)}
+          </p>
+
+          {/* Title */}
+          <h3 className="text-sm font-semibold text-slate-800 leading-snug line-clamp-1 mb-2 group-hover:text-blue-600 transition-colors">
+            {listing.year} {listing.make} {listing.model}
+          </h3>
+
+          {/* Meta row */}
+          <div className="flex items-center gap-3 text-xs text-slate-500">
+            <span className="flex items-center gap-1 min-w-0">
+              <Gauge className="h-3 w-3 shrink-0" aria-hidden="true" />
+              <span>{formatMileage(listing.mileage)}</span>
+            </span>
+            <span className="w-px h-3 bg-slate-200" />
+            <span className="flex items-center gap-1 truncate">
+              <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
+              <span className="truncate">{listing.location}</span>
+            </span>
+            <span className="ml-auto text-slate-400 shrink-0">{timeAgo(listing.created_at)}</span>
           </div>
 
-          {/* Content */}
-          <div className="p-4">
-            <h3 className="font-semibold text-slate-900 text-[15px] leading-snug line-clamp-1 group-hover:text-blue-600 transition-colors mb-0.5">
-              {listing.title}
-            </h3>
-            <p className="text-[13px] text-slate-500 mb-3 font-medium">
-              {listing.make} · {listing.model}
-            </p>
-
-            {/* Specs row */}
-            <div className="flex items-center gap-3 text-[12px] text-slate-400 mb-3">
-              <span className="flex items-center gap-1">
-                <Gauge className="h-3.5 w-3.5 shrink-0" />
-                {formatMileage(listing.mileage)}
-              </span>
-              <span className="w-px h-3 bg-slate-200" />
-              <span className="flex items-center gap-1 truncate">
-                <MapPin className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">{listing.location}</span>
-              </span>
+          {/* Owner actions */}
+          {showActions && (
+            <div className="flex gap-2 mt-3 pt-3 border-t border-slate-100">
+              <Link
+                href={`/main/listings/${listing.id}/edit`}
+                onClick={(e) => e.stopPropagation()}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold border border-slate-200 rounded-xl text-slate-600 hover:border-blue-400 hover:text-blue-700 hover:bg-blue-50 transition-colors min-h-[44px]"
+                aria-label="Edit listing"
+              >
+                <Edit2 className="h-3.5 w-3.5" /> Edit
+              </Link>
+              <button
+                onClick={handleDelete}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold border border-slate-200 rounded-xl text-slate-600 hover:border-red-400 hover:text-red-700 hover:bg-red-50 transition-colors min-h-[44px]"
+                aria-label="Delete listing"
+              >
+                <Trash2 className="h-3.5 w-3.5" /> Delete
+              </button>
             </div>
-
-            {/* Price row */}
-            <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-              <span className="text-xl font-extrabold text-slate-900 tracking-tight">
-                {formatPrice(listing.price)}
-              </span>
-              <span className="text-[11px] text-slate-400 font-medium">{timeAgo(listing.created_at)}</span>
-            </div>
-
-            {/* Owner actions */}
-            {showActions && (
-              <div className="flex gap-2 mt-3 pt-3 border-t border-slate-100">
-                <Link
-                  href={`/main/listings/${listing.id}/edit`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold border border-slate-200 rounded-xl text-slate-600 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 transition-all"
-                >
-                  <Edit2 className="h-3.5 w-3.5" /> Edit
-                </Link>
-                <button
-                  onClick={handleDelete}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold border border-slate-200 rounded-xl text-slate-600 hover:border-red-300 hover:text-red-600 hover:bg-red-50 transition-all"
-                >
-                  <Trash2 className="h-3.5 w-3.5" /> Delete
-                </button>
-              </div>
-            )}
-          </div>
-        </article>
-      </Link>
-    </motion.div>
+          )}
+        </div>
+      </article>
+    </Link>
   );
 }

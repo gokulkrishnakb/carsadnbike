@@ -3,8 +3,8 @@
 import { Suspense, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
-import { SlidersHorizontal, X, LayoutGrid, List, ChevronDown } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { SlidersHorizontal, X, ChevronDown } from "lucide-react";
 import { listingsService } from "@/services/listings.service";
 import { searchService } from "@/services/search.service";
 import { ListingCard } from "@/features/listings/listing-card";
@@ -18,19 +18,19 @@ const PAGE_SIZE = 12;
 
 const SORT_OPTIONS = [
   { value: "created_at_desc", label: "Newest first" },
-  { value: "price_asc", label: "Price: Low to High" },
-  { value: "price_desc", label: "Price: High to Low" },
-  { value: "year_desc", label: "Year: Newest" },
+  { value: "price_asc",       label: "Price: Low → High" },
+  { value: "price_desc",      label: "Price: High → Low" },
+  { value: "year_desc",       label: "Year: Newest" },
 ] as const;
 
 function ListingsPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [showFilters, setShowFilters] = useState(false);
-  const [view, setView] = useState<"grid" | "list">("grid");
 
   const [filters, setFilters] = useState<SearchFilters>({
     query: searchParams.get("q") ?? undefined,
+    vehicle_type: (searchParams.get("type") as SearchFilters["vehicle_type"]) ?? undefined,
     sort: "created_at_desc",
     page: 1,
     size: PAGE_SIZE,
@@ -70,113 +70,93 @@ function ListingsPageInner() {
   ].filter(Boolean).length;
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Top bar */}
-      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+    <div className="space-y-5">
+      {/* Search + controls bar */}
+      <div className="flex gap-2 items-stretch">
         <div className="flex-1">
           <SearchBar
             defaultValue={filters.query ?? ""}
             onSearch={handleSearch}
-            placeholder="Search by make, model, or keyword…"
+            placeholder="Make, model, keyword…"
           />
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Filter toggle */}
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setShowFilters(true)}
-            className="lg:hidden gap-2"
+
+        {/* Sort */}
+        <div className="relative shrink-0">
+          <select
+            value={filters.sort ?? "created_at_desc"}
+            onChange={(e) => setFilters((f) => ({ ...f, sort: e.target.value as SearchFilters["sort"], page: 1 }))}
+            className="appearance-none h-full bg-white border border-slate-200 pl-3 pr-8 text-sm text-slate-700 focus:outline-none focus:border-blue-500 cursor-pointer font-medium hover:border-slate-300 transition-colors min-h-[44px]"
+            aria-label="Sort listings"
           >
-            <SlidersHorizontal className="h-4 w-4" />
-            Filters
-            {activeFilterCount > 0 && (
-              <span className="px-1.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold leading-none">
-                {activeFilterCount}
-              </span>
-            )}
-          </Button>
-
-          {/* Sort */}
-          <div className="relative">
-            <select
-              value={filters.sort ?? "created_at_desc"}
-              onChange={(e) => setFilters((f) => ({ ...f, sort: e.target.value as SearchFilters["sort"], page: 1 }))}
-              className="appearance-none bg-white border border-slate-200 rounded-xl pl-3 pr-8 py-2 text-sm text-slate-700 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 shadow-sm cursor-pointer font-medium transition-colors hover:border-slate-300"
-            >
-              {SORT_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
-          </div>
-
-          {/* View toggle */}
-          <div className="flex border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
-            <button
-              onClick={() => setView("grid")}
-              className={`p-2.5 transition-colors ${view === "grid" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"}`}
-              title="Grid view"
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setView("list")}
-              className={`p-2.5 transition-colors border-l border-slate-200 ${view === "list" ? "bg-blue-600 text-white border-blue-600" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"}`}
-              title="List view"
-            >
-              <List className="h-4 w-4" />
-            </button>
-          </div>
+            {SORT_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+          <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" aria-hidden="true" />
         </div>
+
+        {/* Filter toggle — mobile */}
+        <button
+          onClick={() => setShowFilters(true)}
+          className="lg:hidden flex items-center gap-1.5 bg-white border border-slate-200 px-3 text-sm font-medium text-slate-600 hover:border-slate-400 transition-colors min-h-[44px] shrink-0"
+          aria-label={`Filters${activeFilterCount > 0 ? `, ${activeFilterCount} active` : ""}`}
+          aria-expanded={showFilters}
+        >
+          <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+          {activeFilterCount > 0 && (
+            <span className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 min-w-[18px] text-center" aria-hidden="true">
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
       </div>
 
-      <div className="flex gap-7">
+      <div className="flex gap-6">
         {/* Desktop sidebar */}
-        <aside className="hidden lg:block w-60 shrink-0">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sticky top-24">
+        <aside className="hidden lg:block w-56 shrink-0" aria-label="Filters">
+          <div className="bg-white border border-slate-200 p-5 sticky top-20">
             <FilterSidebar filters={filters} onChange={handleFiltersChange} />
           </div>
         </aside>
 
-        {/* Listings */}
-        <div className="flex-1 min-w-0">
-          {/* Result count */}
-          <div className="flex items-center justify-between mb-5">
+        {/* Listings area */}
+        <div className="flex-1 min-w-0 space-y-4">
+          {/* Result count + clear */}
+          <div className="flex items-center justify-between h-8">
             {isLoading ? (
-              <div className="skeleton h-4 w-32 rounded-lg" />
+              <div className="h-3.5 w-32 bg-slate-100 animate-pulse" />
             ) : (
               <p className="text-sm text-slate-500">
-                <span className="text-slate-900 font-bold">{total.toLocaleString()}</span>{" "}
-                vehicle{total !== 1 ? "s" : ""} found
+                <span className="font-bold text-slate-900">{total.toLocaleString()}</span>{" "}
+                vehicle{total !== 1 ? "s" : ""}
               </p>
             )}
             {activeFilterCount > 0 && (
               <button
                 onClick={() => setFilters({ query: filters.query, sort: filters.sort, page: 1, size: PAGE_SIZE })}
-                className="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-800 font-semibold transition-colors"
+                className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-semibold min-h-[32px] px-1"
+                aria-label="Clear all active filters"
               >
-                <X className="h-3 w-3" /> Clear all filters
+                <X className="h-3 w-3" aria-hidden="true" /> Clear filters
               </button>
             )}
           </div>
 
+          {/* Grid */}
           {isLoading ? (
-            <div className={`grid gap-5 ${view === "grid" ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3" : "grid-cols-1"}`}>
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3" role="status" aria-label="Loading listings">
               {Array.from({ length: 6 }).map((_, i) => <ListingCardSkeleton key={i} />)}
             </div>
           ) : allListings.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-24 text-center">
-              <div className="w-20 h-20 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center mb-5">
-                <span className="text-3xl">🔍</span>
-              </div>
-              <p className="text-lg font-bold text-slate-900 mb-1">No vehicles found</p>
-              <p className="text-sm text-slate-500">Try adjusting your filters or search terms</p>
+            <div className="flex flex-col items-center justify-center py-20 text-center" role="status">
+              <p className="text-4xl mb-4" aria-hidden="true">🔍</p>
+              <p className="text-base font-bold text-slate-900 mb-1">No vehicles found</p>
+              <p className="text-sm text-slate-500 mb-5">Try adjusting your filters or search terms</p>
               {activeFilterCount > 0 && (
                 <Button
                   variant="secondary"
                   size="sm"
-                  className="mt-5"
                   onClick={() => setFilters({ query: filters.query, sort: filters.sort, page: 1, size: PAGE_SIZE })}
                 >
                   Clear filters
@@ -184,23 +164,23 @@ function ListingsPageInner() {
               )}
             </div>
           ) : (
-            <div className={`grid gap-5 ${view === "grid" ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3" : "grid-cols-1"}`}>
-              {allListings.map((listing, i) => (
-                <ListingCard key={listing.id} listing={listing} index={i} />
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+              {allListings.map((listing) => (
+                <ListingCard key={listing.id} listing={listing} />
               ))}
             </div>
           )}
 
           {hasNextPage && (
-            <div className="flex justify-center mt-10">
+            <div className="flex justify-center pt-4">
               <Button
                 variant="secondary"
                 size="lg"
                 loading={isFetchingNextPage}
                 onClick={() => fetchNextPage()}
-                className="px-10"
+                className="px-10 min-h-[48px]"
               >
-                Load more vehicles
+                Load more
               </Button>
             </div>
           )}
@@ -216,16 +196,20 @@ function ListingsPageInner() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowFilters(false)}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+              className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+              aria-hidden="true"
             />
             <motion.div
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed right-0 top-0 h-full w-80 bg-white border-l border-slate-200 z-50 overflow-y-auto shadow-2xl lg:hidden"
+              className="fixed right-0 top-0 h-full w-80 bg-white border-l border-slate-200 z-50 overflow-y-auto lg:hidden"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Search filters"
             >
-              <div className="p-6">
+              <div className="p-5">
                 <FilterSidebar
                   filters={filters}
                   onChange={handleFiltersChange}

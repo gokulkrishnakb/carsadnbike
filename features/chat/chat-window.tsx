@@ -3,8 +3,10 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, ArrowLeft, Phone, Video, MessageCircle } from "lucide-react";
+import Link from "next/link";
 import { useChat } from "@/hooks/use-chat";
 import { MessageBubble, TypingIndicator, DateDivider } from "./message-bubble";
+import { imageUrl } from "@/lib/utils";
 import type { Conversation } from "@/types";
 
 function shouldShowDateDivider(prev: string | undefined, curr: string): boolean {
@@ -85,6 +87,24 @@ export function ChatWindow({ conversation, onBack }: ChatWindowProps) {
         </div>
       </div>
 
+      {/* Vehicle preview banner */}
+      <div className="shrink-0 bg-blue-50 border-b border-blue-100 px-4 py-2.5 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center shrink-0 overflow-hidden">
+          {conversation.listing_image ? (
+            <img src={imageUrl(conversation.listing_image)} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-blue-400 text-xs font-bold">🚗</span>
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[11px] text-blue-500 font-semibold uppercase tracking-wider">Chatting about</p>
+          <p className="text-sm font-bold text-blue-900 truncate">{conversation.listing_title}</p>
+        </div>
+        <Link href={`/main/listings/${conversation.listing_id}`} className="text-xs text-blue-600 hover:text-blue-800 font-semibold shrink-0">
+          View →
+        </Link>
+      </div>
+
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-5 space-y-2 scroll-smooth">
         {messages.length === 0 && (
@@ -124,6 +144,21 @@ export function ChatWindow({ conversation, onBack }: ChatWindowProps) {
 
       {/* Input bar */}
       <div className="shrink-0 border-t border-slate-200 bg-white px-4 py-3.5">
+        {/* Quick replies */}
+        {messages.length === 0 && (
+          <div className="shrink-0 pb-2 flex gap-2 flex-wrap">
+            {["Is this still available?", "What's your best price?", "Can I test drive?"].map((q) => (
+              <button
+                key={q}
+                type="button"
+                onClick={() => { setDraft(q); textareaRef.current?.focus(); }}
+                className="text-xs bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 text-slate-600 px-3 py-1.5 rounded-full transition-colors font-medium"
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="flex items-end gap-2.5">
           <textarea
             ref={textareaRef}
@@ -132,13 +167,13 @@ export function ChatWindow({ conversation, onBack }: ChatWindowProps) {
             onKeyDown={handleKeyDown}
             placeholder="Type a message…"
             rows={1}
-            className="flex-1 resize-none bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all leading-relaxed max-h-[120px] overflow-y-auto"
+            className="flex-1 resize-none bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all leading-relaxed max-h-[120px] overflow-y-auto"
           />
           <motion.button
             onClick={handleSend}
             disabled={!draft.trim()}
             whileTap={{ scale: 0.90 }}
-            className="shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-700 text-white shadow-[0_2px_8px_rgba(37,99,235,0.35)] hover:shadow-[0_4px_12px_rgba(37,99,235,0.4)]"
+            className="shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-700 text-white shadow-[0_2px_8px_rgba(37,99,235,0.35)] hover:shadow-[0_4px_12px_rgba(37,99,235,0.4)]"
           >
             <Send className="h-4 w-4" />
           </motion.button>

@@ -46,15 +46,15 @@
   --font-body:    "Inter", system-ui, sans-serif;
   --font-mono:    "JetBrains Mono", monospace;
 
-  /* Radii — all corners are sharp/rectangular per design direction */
-  --radius:     0px;
-  --radius-sm:  0px;
-  --radius-md:  0px;
-  --radius-lg:  0px;
-  --radius-xl:  0px;
-  --radius-2xl: 0px;
-  --radius-3xl: 0px;
-  --radius-full: 0px;
+  /* Radii */
+  --radius:      0.5rem;
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-xl:   12px;
+  --radius-2xl:  16px;
+  --radius-3xl:  24px;
+  --radius-full: 9999px;
 
   /* Shadows */
   --shadow-xs:    0 1px 2px 0 rgb(0 0 0 / 0.04);
@@ -92,7 +92,7 @@ h1, h2, h3, h4, h5, h6 {
 /* ── Scrollbar ────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 0; }
+::-webkit-scrollbar-thumb { background: var(--color-border); }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-border-hover); }
 
 /* ── Selection ────────────────────────────────────────── */
@@ -102,14 +102,12 @@ h1, h2, h3, h4, h5, h6 {
 :focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
-  border-radius: 0;
 }
 
 /* ── Card ─────────────────────────────────────────────── */
 .card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 0;
   box-shadow: var(--shadow-card);
   transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.2s ease;
 }
@@ -121,7 +119,6 @@ h1, h2, h3, h4, h5, h6 {
 .card-flat {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 0;
   box-shadow: var(--shadow-card);
 }
 
@@ -130,7 +127,6 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--color-surface);
   border: 1.5px solid var(--color-border);
   color: var(--color-text-1);
-  border-radius: 0;
   padding: 0.625rem 0.875rem;
   font-family: var(--font-body);
   font-size: 0.9375rem;
@@ -199,13 +195,11 @@ h1, h2, h3, h4, h5, h6 {
 .bubble-sent {
   background: var(--color-primary);
   color: #ffffff;
-  border-radius: 0;
 }
 .bubble-received {
   background: var(--color-surface);
   color: var(--color-text-1);
   border: 1px solid var(--color-border);
-  border-radius: 0;
   box-shadow: var(--shadow-xs);
 }
 
@@ -226,7 +220,6 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ── Safety banner ────────────────────────────────────── */
 .safety-banner {
-  border-radius: 0;
   padding: 0.875rem 1rem;
 }
 
@@ -242,7 +235,6 @@ h1, h2, h3, h4, h5, h6 {
   background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
   background-size: 200% 100%;
   animation: shimmer 1.6s infinite ease-in-out;
-  border-radius: 0;
 }
 @keyframes shimmer {
   0%   { background-position: 200% 0; }
@@ -254,7 +246,6 @@ h1, h2, h3, h4, h5, h6 {
   content: "";
   position: absolute;
   inset: -3px;
-  border-radius: 0;
   background: var(--color-primary);
   opacity: 0.35;
   animation: pulse-ring 1.6s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
@@ -320,38 +311,39 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 :root {
-  --background:    oklch(1 0 0);
-  --foreground:    oklch(0.145 0 0);
-  --card:    oklch(1 0 0);
-  --card-foreground:    oklch(0.145 0 0);
-  --popover:    oklch(1 0 0);
-  --popover-foreground:    oklch(0.145 0 0);
-  --primary:    oklch(0.205 0 0);
-  --primary-foreground:    oklch(0.985 0 0);
-  --secondary:    oklch(0.97 0 0);
-  --secondary-foreground:    oklch(0.205 0 0);
-  --muted:    oklch(0.97 0 0);
-  --muted-foreground:    oklch(0.556 0 0);
-  --accent:    oklch(0.97 0 0);
-  --accent-foreground:    oklch(0.205 0 0);
-  --destructive:    oklch(0.577 0.245 27.325);
-  --border:    oklch(0.922 0 0);
-  --input:    oklch(0.922 0 0);
-  --ring:    oklch(0.708 0 0);
-  --chart-1:    oklch(0.87 0 0);
-  --chart-2:    oklch(0.556 0 0);
-  --chart-3:    oklch(0.439 0 0);
-  --chart-4:    oklch(0.371 0 0);
-  --chart-5:    oklch(0.269 0 0);
-  --radius:    0.625rem;
-  --sidebar:    oklch(0.985 0 0);
-  --sidebar-foreground:    oklch(0.145 0 0);
-  --sidebar-primary:    oklch(0.205 0 0);
-  --sidebar-primary-foreground:    oklch(0.985 0 0);
-  --sidebar-accent:    oklch(0.97 0 0);
-  --sidebar-accent-foreground:    oklch(0.205 0 0);
-  --sidebar-border:    oklch(0.922 0 0);
-  --sidebar-ring:    oklch(0.708 0 0);
+  /* ── CarsAndBikes blue brand theme ── */
+  --background:    oklch(0.984 0.003 247.858);  /* slate-50 */
+  --foreground:    oklch(0.129 0.042 264.695);  /* slate-900 */
+  --card:          oklch(1 0 0);                /* white */
+  --card-foreground:    oklch(0.129 0.042 264.695);
+  --popover:       oklch(1 0 0);
+  --popover-foreground:  oklch(0.129 0.042 264.695);
+  --primary:       oklch(0.488 0.243 264.376);  /* blue-600 */
+  --primary-foreground:  oklch(0.985 0 0);      /* white */
+  --secondary:     oklch(0.968 0.007 247.896);  /* slate-100 */
+  --secondary-foreground: oklch(0.278 0.033 256.848); /* slate-700 */
+  --muted:         oklch(0.968 0.007 247.896);  /* slate-100 */
+  --muted-foreground:    oklch(0.554 0.046 257.417); /* slate-500 */
+  --accent:        oklch(0.951 0.026 236.824);  /* blue-50 */
+  --accent-foreground:   oklch(0.379 0.146 265.522); /* blue-800 */
+  --destructive:   oklch(0.577 0.245 27.325);
+  --border:        oklch(0.882 0.009 264.364);  /* slate-200 */
+  --input:         oklch(0.882 0.009 264.364);  /* slate-200 */
+  --ring:          oklch(0.488 0.243 264.376);  /* blue-600 */
+  --chart-1:       oklch(0.488 0.243 264.376);
+  --chart-2:       oklch(0.379 0.146 265.522);
+  --chart-3:       oklch(0.623 0.214 259.815);
+  --chart-4:       oklch(0.738 0.166 252.881);
+  --chart-5:       oklch(0.819 0.125 249.061);
+  --radius:        0.5rem;
+  --sidebar:       oklch(1 0 0);
+  --sidebar-foreground:  oklch(0.129 0.042 264.695);
+  --sidebar-primary:     oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent:      oklch(0.951 0.026 236.824);
+  --sidebar-accent-foreground:  oklch(0.379 0.146 265.522);
+  --sidebar-border:      oklch(0.882 0.009 264.364);
+  --sidebar-ring:        oklch(0.488 0.243 264.376);
 }
 
 .dark {

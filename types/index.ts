@@ -116,6 +116,60 @@ export interface NotificationListResponse {
   unread: number;
 }
 
+// ── Wishlist ──────────────────────────────────────────────────────
+export interface WishlistResponse {
+  items: Listing[];
+  total: number;
+}
+
+export interface WishlistStatusResponse {
+  listing_id: string;
+  wishlisted: boolean;
+}
+
+// ── Advertisements ────────────────────────────────────────────────
+export type AdPlacement = "homepage" | "listings_top" | "listings_sidebar" | "listing_detail";
+
+export interface Advertisement {
+  id: string;
+  title: string;
+  description?: string;
+  image_url?: string;
+  link_url: string;
+  placement: AdPlacement;
+  is_active: boolean;
+  start_date?: string;
+  end_date?: string;
+  impressions: number;
+  clicks: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdListResponse {
+  items: Advertisement[];
+  total: number;
+}
+
+// ── Admin ─────────────────────────────────────────────────────────
+export interface AdminStats {
+  total_users: number;
+  total_listings: number;
+  active_listings: number;
+  sold_listings: number;
+  total_ads: number;
+  active_ads: number;
+}
+
+export interface AdminUser extends User {
+  last_login?: string;
+}
+
+export interface AdminUserListResponse {
+  items: AdminUser[];
+  total: number;
+}
+
 // ── API responses ─────────────────────────────────────────────────
 export interface ApiError {
   detail: string;

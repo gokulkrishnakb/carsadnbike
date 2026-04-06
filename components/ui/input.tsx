@@ -1,69 +1,87 @@
-"use client";
+"use client"
 
-import { forwardRef, useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
-import { cn } from "@/lib/utils";
+import * as React from "react"
+import { Input as InputPrimitive } from "@base-ui/react/input"
+import { cn } from "@/lib/utils"
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-  error?: string;
-  hint?: string;
-  icon?: React.ReactNode;
-  iconRight?: React.ReactNode;
+/* ── Bare shadcn Input ─────────────────────────────── */
+function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+  return (
+    <InputPrimitive
+      type={type}
+      data-slot="input"
+      className={cn(
+        "h-9 w-full min-w-0 border border-input bg-background px-3 py-2 text-sm transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive",
+        className
+      )}
+      {...props}
+    />
+  )
 }
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(
+/* ── Rich Input with label / icon / error / hint ──── */
+export interface LabeledInputProps extends React.ComponentProps<"input"> {
+  label?: string
+  error?: string
+  hint?: string
+  icon?: React.ReactNode
+  iconRight?: React.ReactNode
+}
+
+const LabeledInput = React.forwardRef<HTMLInputElement, LabeledInputProps>(
   ({ className, label, error, hint, icon, iconRight, id, ...props }, ref) => {
-    const inputId = id ?? label?.toLowerCase().replace(/\s/g, "-");
+    const inputId = id ?? label?.toLowerCase().replace(/\s+/g, "-")
     return (
       <div className="flex flex-col gap-1.5 w-full">
         {label && (
-          <label
-            htmlFor={inputId}
-            className="text-sm font-medium text-slate-700"
-          >
+          <label htmlFor={inputId} className="text-sm font-medium text-foreground">
             {label}
           </label>
         )}
         <div className="relative">
           {icon && (
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
               {icon}
             </span>
           )}
-          <input
+          <InputPrimitive
             ref={ref}
             id={inputId}
+            data-slot="input"
             className={cn(
-              "input-base",
-              icon && "pl-10",
-              iconRight && "pr-10",
-              error && "border-red-400 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.12)]",
+              "h-9 w-full min-w-0 border border-input bg-background text-sm transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50",
+              icon ? "pl-10 pr-3 py-2" : "px-3 py-2",
+              iconRight ? "pr-10" : "",
+              error && "border-destructive focus-visible:ring-destructive/30",
               className
             )}
             {...props}
           />
           {iconRight && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 flex items-center">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground flex items-center">
               {iconRight}
             </span>
           )}
         </div>
-        {error && <p className="text-xs text-red-500 flex items-center gap-1">{error}</p>}
-        {hint && !error && <p className="text-xs text-slate-500">{hint}</p>}
+        {error && <p className="text-xs text-destructive">{error}</p>}
+        {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
       </div>
-    );
+    )
   }
-);
-Input.displayName = "Input";
+)
+LabeledInput.displayName = "LabeledInput"
 
-export interface PasswordInputProps extends Omit<InputProps, "type" | "iconRight"> {}
+/* ── Password Input ───────────────────────────────── */
+import { Eye, EyeOff } from "lucide-react"
+import { useState } from "react"
 
-export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
+export type PasswordInputProps = Omit<LabeledInputProps, "type" | "iconRight">
+
+const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
   (props, ref) => {
-    const [show, setShow] = useState(false);
+    const [show, setShow] = useState(false)
     return (
-      <Input
+      <LabeledInput
         ref={ref}
         {...props}
         type={show ? "text" : "password"}
@@ -72,29 +90,30 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             type="button"
             tabIndex={-1}
             onClick={() => setShow((s) => !s)}
-            className="text-slate-400 hover:text-slate-600 transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors"
           >
-            {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
           </button>
         }
       />
-    );
+    )
   }
-);
-PasswordInput.displayName = "PasswordInput";
+)
+PasswordInput.displayName = "PasswordInput"
 
+/* ── Textarea ─────────────────────────────────────── */
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  label?: string;
-  error?: string;
+  label?: string
+  error?: string
 }
 
-export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
+const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, label, error, id, ...props }, ref) => {
-    const inputId = id ?? label?.toLowerCase().replace(/\s/g, "-");
+    const inputId = id ?? label?.toLowerCase().replace(/\s+/g, "-")
     return (
       <div className="flex flex-col gap-1.5 w-full">
         {label && (
-          <label htmlFor={inputId} className="text-sm font-medium text-slate-700">
+          <label htmlFor={inputId} className="text-sm font-medium text-foreground">
             {label}
           </label>
         )}
@@ -102,15 +121,18 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           id={inputId}
           className={cn(
-            "input-base resize-none min-h-[100px]",
-            error && "border-red-400",
+            "w-full min-h-[100px] border border-input bg-background px-3 py-2 text-sm transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 resize-none",
+            error && "border-destructive",
             className
           )}
           {...props}
         />
-        {error && <p className="text-xs text-red-500">{error}</p>}
+        {error && <p className="text-xs text-destructive">{error}</p>}
       </div>
-    );
+    )
   }
-);
-Textarea.displayName = "Textarea";
+)
+Textarea.displayName = "Textarea"
+
+// LabeledInput is exported as "Input" for backward compatibility with form pages
+export { Input as InputBase, LabeledInput as Input, LabeledInput, PasswordInput, Textarea }

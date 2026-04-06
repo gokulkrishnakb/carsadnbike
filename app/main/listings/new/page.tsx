@@ -90,7 +90,7 @@ export default function NewListingPage() {
   const values = watch();
 
   return (
-    <div className="max-w-2xl mx-auto pb-16">
+    <div className="max-w-xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <button
@@ -110,7 +110,7 @@ export default function NewListingPage() {
         {STEPS.map((s, i) => (
           <div key={s.label} className="flex items-center flex-1">
             <div className="flex flex-col items-center gap-1.5 min-w-0">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+              <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
                 i < step ? "bg-blue-600 text-white shadow-[0_2px_8px_rgba(37,99,235,0.35)]" :
                 i === step ? "bg-blue-600 text-white shadow-[0_2px_8px_rgba(37,99,235,0.35)] ring-4 ring-blue-100" :
                 "bg-white border-2 border-slate-200 text-slate-400"
@@ -266,21 +266,21 @@ export default function NewListingPage() {
         </AnimateStep>
 
         {/* Navigation */}
-        <div className="flex items-center justify-between mt-8">
-          <div>
+        <div className="flex items-center justify-between gap-3 mt-8">
+          <div className="flex-1">
             {step > 0 && (
-              <Button type="button" variant="secondary" onClick={() => setStep((s) => s - 1)}>
+              <Button type="button" variant="secondary" className="w-full sm:w-auto" onClick={() => setStep((s) => s - 1)}>
                 Back
               </Button>
             )}
           </div>
 
           {step < STEPS.length - 1 ? (
-            <Button type="button" onClick={nextStep} className="gap-2">
+            <Button type="button" onClick={nextStep} className="flex-1 sm:flex-none gap-2">
               Continue <ArrowRight className="h-4 w-4" />
             </Button>
           ) : (
-            <Button type="submit" loading={submitting} className="gap-2 px-8">
+            <Button type="submit" loading={submitting} className="flex-1 sm:flex-none gap-2 px-8">
               Publish Listing <ArrowRight className="h-4 w-4" />
             </Button>
           )}
@@ -298,7 +298,7 @@ function AnimateStep({ step, children }: { step: number; children: React.ReactNo
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.2 }}
-      className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 sm:p-7 min-h-[340px]"
+      className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 sm:p-8 min-h-[340px]"
     >
       {children}
     </motion.div>

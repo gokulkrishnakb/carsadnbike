@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///Users/shinishpersonal/Documents/carsandbikes/frontend/app/main/layout.tsx"],"sourcesContent":["import { Header } from \"@/components/layout/header\";\n\nexport default function MainLayout({ children }: { children: React.ReactNode }) {\n  return (\n    <div className=\"min-h-dvh flex flex-col\">\n      <Header />\n      <main className=\"flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 page-enter\">\n        {children}\n      </main>\n      <footer className=\"border-t border-[var(--color-border)] py-6 px-6 text-center text-xs text-[var(--color-text-muted)]\">\n        © 2025 CarsAndBikes · Built with precision\n      </footer>\n    </div>\n  );\n}\n"],"names":[],"mappings":";;;;;;;;;;;;AAEe,SAAS,WAAW,EAAE,QAAQ,EAAiC;IAC5E,qBACE,8OAAC;QAAI,WAAU;;0BACb,8OAAC;;;;;0BACD,8OAAC;gBAAK,WAAU;0BACb;;;;;;0BAEH,8OAAC;gBAAO,WAAU;0BAAqG;;;;;;;;;;;;AAK7H","debugId":null}}]
-}
