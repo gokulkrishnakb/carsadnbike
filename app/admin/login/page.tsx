@@ -2,17 +2,24 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Mail, Lock, ArrowRight, Car } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Mail, Lock, ArrowRight, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth.store";
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
   const router = useRouter();
-  const { mockLogin } = useAuthStore();
+  const { user, mockLogin, clearAuth } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // If already logged in as admin, redirect to admin dashboard
+  useEffect(() => {
+    if (user && user.role === "admin") {
+      router.replace("/admin");
+    }
+  }, [user, router]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,18 +31,25 @@ export default function LoginPage() {
 
     setIsSubmitting(true);
 
-    // Mock login - simulates a login without backend
+    // Mock login - simulates admin authentication
     setTimeout(() => {
-      // Determine role based on email for testing
-      let role = "user";
-      if (email.includes("agent")) role = "agent";
-      if (email.includes("admin")) role = "admin";
+      // For admin login, check if email contains "admin"
+      const isAdmin = email.toLowerCase().includes("admin");
 
-      const name = email.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      if (!isAdmin) {
+        toast.error("Access denied. Admin credentials required.");
+        setIsSubmitting(false);
+        return;
+      }
 
-      mockLogin(email, name, role);
-      toast.success("Welcome back!");
-      router.push("/main/dashboard");
+      const name = email
+        .split("@")[0]
+        .replace(/[._]/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+
+      mockLogin(email, name, "admin");
+      toast.success("Welcome to Admin Portal!");
+      router.push("/admin");
       setIsSubmitting(false);
     }, 500);
   };
@@ -46,15 +60,15 @@ export default function LoginPage() {
       <div className="px-6 py-4 flex items-center justify-between">
         <Link href="/main" className="flex items-center gap-2">
           <div className="w-8 h-8 bg-[#9b111e] rounded flex items-center justify-center">
-            <Car className="w-4 h-4 text-white" />
+            <Shield className="w-4 h-4 text-white" />
           </div>
-          <span className="font-bold text-white text-sm">CarsAndBikes</span>
+          <span className="font-bold text-white text-sm">Admin Portal</span>
         </Link>
         <Link
-          href="/auth/register"
+          href="/auth/login"
           className="text-sm text-gray-400 hover:text-white font-medium transition-colors"
         >
-          Create account
+          User Login
         </Link>
       </div>
 
@@ -63,19 +77,27 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
           <div className="bg-white rounded shadow-2xl p-8">
             <div className="mb-6 text-center">
-              <h1 className="text-2xl font-bold text-[#272a41] tracking-tight mb-1">Welcome Back</h1>
-              <p className="text-[#56586a] text-sm">Sign in to continue to CarsAndBikes</p>
+              <div className="w-16 h-16 bg-[#9b111e]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Shield className="w-8 h-8 text-[#9b111e]" />
+              </div>
+              <h1 className="text-2xl font-bold text-[#272a41] tracking-tight mb-1">
+                Admin Portal
+              </h1>
+              <p className="text-[#56586a] text-sm">
+                Sign in with administrator credentials
+              </p>
             </div>
 
             {/* Test Mode Notice */}
-            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-              <strong>Test Mode:</strong> Enter any email to login. Use "agent@test.com" for agent role or "admin@test.com" for admin role.
+            <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
+              <strong>Test Mode:</strong> Use an email containing "admin" (e.g.,
+              admin@test.com) to access the admin portal.
             </div>
 
             <form onSubmit={onSubmit} className="space-y-4" noValidate>
               <div>
                 <label className="block text-xs font-semibold text-[#56586a] uppercase tracking-wider mb-2">
-                  Email
+                  Admin Email
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -83,7 +105,7 @@ export default function LoginPage() {
                   </div>
                   <input
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder="admin@example.com"
                     autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -111,15 +133,6 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end">
-                <Link
-                  href="/auth/forgot-password"
-                  className="text-xs text-[#9b111e] hover:text-[#7b0d18] font-semibold transition-colors"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -129,21 +142,23 @@ export default function LoginPage() {
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                   <>
-                    Sign In <ArrowRight className="h-4 w-4" />
+                    Access Admin Portal <ArrowRight className="h-4 w-4" />
                   </>
                 )}
               </button>
             </form>
 
-            <p className="mt-6 text-center text-sm text-[#56586a]">
-              Don't have an account?{" "}
-              <Link
-                href="/auth/register"
-                className="text-[#9b111e] hover:text-[#7b0d18] font-semibold transition-colors"
-              >
-                Create one free
-              </Link>
-            </p>
+            <div className="mt-6 pt-6 border-t border-gray-100">
+              <p className="text-center text-xs text-[#56586a]">
+                Not an administrator?{" "}
+                <Link
+                  href="/auth/login"
+                  className="text-[#9b111e] hover:text-[#7b0d18] font-semibold transition-colors"
+                >
+                  Go to user login
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
       </div>

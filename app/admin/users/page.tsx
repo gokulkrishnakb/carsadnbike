@@ -97,7 +97,7 @@ export default function AdminUsersPage() {
                         <select
                           value={u.role}
                           onChange={(e) => roleMutation.mutate({ userId: u.id, role: e.target.value as Role })}
-                          className="text-xs border border-slate-200 bg-white px-2 py-1 text-slate-700 focus:outline-none focus:border-blue-400"
+                          className="text-xs border border-slate-200 bg-white px-2 py-1 rounded text-slate-700 focus:outline-none focus:border-[#9b111e] focus:ring-1 focus:ring-red-100"
                         >
                           <option value="user">user</option>
                           <option value="dealer">dealer</option>

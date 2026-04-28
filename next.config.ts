@@ -6,6 +6,7 @@ const config: NextConfig = {
     remotePatterns: [
       { protocol: "http", hostname: "localhost", port: "8000" },
       { protocol: "https", hostname: "*.carsandbikes.com" },
+      { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
   async headers() {

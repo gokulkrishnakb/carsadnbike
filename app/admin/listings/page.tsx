@@ -63,7 +63,7 @@ export default function AdminListingsPage() {
           <select
             value={statusFilter ?? ""}
             onChange={(e) => { setStatusFilter(e.target.value || undefined); setPage(1); }}
-            className="text-sm border border-slate-200 bg-white px-3 py-2 text-slate-700 focus:outline-none focus:border-blue-400"
+            className="text-sm border border-slate-200 bg-white px-3 py-2 rounded text-slate-700 focus:outline-none focus:border-[#9b111e] focus:ring-1 focus:ring-red-100"
           >
             <option value="">All statuses</option>
             {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -109,7 +109,7 @@ export default function AdminListingsPage() {
                         <select
                           value={l.status}
                           onChange={(e) => statusMutation.mutate({ listingId: l.id, status: e.target.value })}
-                          className="text-xs border border-slate-200 bg-white px-2 py-1 text-slate-700 focus:outline-none focus:border-blue-400"
+                          className="text-xs border border-slate-200 bg-white px-2 py-1 rounded text-slate-700 focus:outline-none focus:border-[#9b111e] focus:ring-1 focus:ring-red-100"
                         >
                           {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                         </select>

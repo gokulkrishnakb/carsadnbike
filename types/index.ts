@@ -59,6 +59,7 @@ export interface SearchFilters {
   min_year?: number;
   max_year?: number;
   location?: string;
+  district?: string;
   sort?: "price_asc" | "price_desc" | "year_desc" | "created_at_desc";
   page?: number;
   size?: number;
@@ -168,6 +169,22 @@ export interface AdminUser extends User {
 export interface AdminUserListResponse {
   items: AdminUser[];
   total: number;
+}
+
+// ── Site Settings ─────────────────────────────────────────────────
+export interface SiteSettings {
+  site_name: string;
+  logo_url?: string;
+  favicon_url?: string;
+  support_email?: string;
+  support_phone?: string;
+  address?: string;
+  social_facebook?: string;
+  social_twitter?: string;
+  social_instagram?: string;
+  social_youtube?: string;
+  meta_description?: string;
+  maintenance_mode?: boolean;
 }
 
 // ── API responses ─────────────────────────────────────────────────

@@ -134,7 +134,8 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
   const isMine = user?.id === listing.user_id;
 
   return (
-    <div className="max-w-5xl mx-auto pb-28 sm:pb-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div className="max-w-5xl mx-auto pb-28 sm:pb-10">
       {/* Back */}
       <button
         onClick={() => router.back()}
@@ -341,6 +342,7 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
           </Button>
         </div>
       )}
+      </div>
     </div>
   );
 }

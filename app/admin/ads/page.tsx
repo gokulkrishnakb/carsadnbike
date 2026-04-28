@@ -59,7 +59,7 @@ function AdForm({
             value={form.title}
             onChange={(e) => set("title", e.target.value)}
             placeholder="Ad title"
-            className="w-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-400"
+            className="w-full border border-slate-200 bg-white px-3 py-2 rounded text-sm text-slate-900 focus:outline-none focus:border-[#9b111e] focus:ring-1 focus:ring-red-100"
           />
         </div>
         <div>
@@ -68,7 +68,7 @@ function AdForm({
             value={form.link_url}
             onChange={(e) => set("link_url", e.target.value)}
             placeholder="https://..."
-            className="w-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-400"
+            className="w-full border border-slate-200 bg-white px-3 py-2 rounded text-sm text-slate-900 focus:outline-none focus:border-[#9b111e] focus:ring-1 focus:ring-red-100"
           />
         </div>
         <div>
@@ -76,7 +76,7 @@ function AdForm({
           <select
             value={form.placement}
             onChange={(e) => set("placement", e.target.value as AdPlacement)}
-            className="w-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-blue-400"
+            className="w-full border border-slate-200 bg-white px-3 py-2 rounded text-sm text-slate-700 focus:outline-none focus:border-[#9b111e] focus:ring-1 focus:ring-red-100"
           >
             {PLACEMENTS.map((p) => <option key={p} value={p}>{PLACEMENT_LABEL[p]}</option>)}
           </select>
@@ -87,7 +87,7 @@ function AdForm({
             value={form.image_url}
             onChange={(e) => set("image_url", e.target.value)}
             placeholder="https://..."
-            className="w-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-400"
+            className="w-full border border-slate-200 bg-white px-3 py-2 rounded text-sm text-slate-900 focus:outline-none focus:border-[#9b111e] focus:ring-1 focus:ring-red-100"
           />
         </div>
         <div className="sm:col-span-2">
@@ -96,7 +96,7 @@ function AdForm({
             value={form.description}
             onChange={(e) => set("description", e.target.value)}
             placeholder="Short ad description"
-            className="w-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-400"
+            className="w-full border border-slate-200 bg-white px-3 py-2 rounded text-sm text-slate-900 focus:outline-none focus:border-[#9b111e] focus:ring-1 focus:ring-red-100"
           />
         </div>
       </div>
@@ -106,7 +106,7 @@ function AdForm({
             type="checkbox"
             checked={form.is_active}
             onChange={(e) => set("is_active", e.target.checked)}
-            className="w-4 h-4 border-slate-300 text-blue-600"
+            className="w-4 h-4 border-slate-300 text-[#9b111e] accent-[#9b111e]"
           />
           <span className="text-sm text-slate-700 font-medium">Active</span>
         </label>

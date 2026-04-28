@@ -1,39 +1,74 @@
 "use client";
 
-import { authClient } from "@/lib/auth-client";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import type { User } from "@/types";
 
-type SessionUser = {
-  id: string;
-  email: string;
-  name: string;
-  emailVerified: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+// Mock mode - set to true for testing without backend
+const MOCK_MODE = true;
+
+type AuthState = {
+  user: User | null;
+  isPending: boolean;
+  setUser: (user: User | null) => void;
+  clearAuth: () => void;
+  updateUser: (partial: Partial<User>) => void;
+  mockLogin: (email: string, name: string, role?: string) => void;
 };
 
-function toUser(sessionUser: SessionUser | undefined): User | null {
-  if (!sessionUser) return null;
-  return {
-    id: sessionUser.id,
-    email: sessionUser.email,
-    full_name: sessionUser.name,
-    role: "user",
-    is_active: true,
-    is_verified: sessionUser.emailVerified,
-    created_at: sessionUser.createdAt?.toISOString?.() ?? new Date().toISOString(),
-  };
-}
+const useAuthStoreBase = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      isPending: false,
+      setUser: (user) => set({ user }),
+      clearAuth: () => set({ user: null }),
+      updateUser: (partial) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, ...partial } : null,
+        })),
+      mockLogin: (email: string, name: string, role: string = "user") =>
+        set({
+          user: {
+            id: "mock-user-" + Date.now(),
+            email,
+            full_name: name,
+            role: role as "user" | "agent" | "admin",
+            is_active: true,
+            is_verified: true,
+            created_at: new Date().toISOString(),
+          },
+        }),
+    }),
+    {
+      name: "auth-storage",
+    }
+  )
+);
 
+// Export hook that works with both mock and real auth
 export function useAuthStore() {
-  const { data: session, isPending } = authClient.useSession();
+  const store = useAuthStoreBase();
 
+  if (MOCK_MODE) {
+    return {
+      user: store.user,
+      isPending: false,
+      clearAuth: store.clearAuth,
+      updateUser: store.updateUser,
+      mockLogin: store.mockLogin,
+    };
+  }
+
+  // Real auth mode would use better-auth here
   return {
-    user: toUser(session?.user as SessionUser | undefined),
-    isPending,
-    clearAuth: () => authClient.signOut(),
-    updateUser: (_partial: Partial<User>) => {
-      // User data is managed by better-auth sessions; refresh page to reflect profile changes
-    },
+    user: store.user,
+    isPending: false,
+    clearAuth: store.clearAuth,
+    updateUser: store.updateUser,
+    mockLogin: store.mockLogin,
   };
 }
+
+// Export for direct access
+export { useAuthStoreBase };

@@ -22,7 +22,8 @@ export default function WishlistPage() {
 
   if (!user) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 text-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="flex flex-col items-center justify-center py-24 text-center">
         <div className="w-16 h-16 bg-slate-100 border border-slate-200 flex items-center justify-center mb-5">
           <Heart className="h-7 w-7 text-slate-400" />
         </div>
@@ -31,12 +32,13 @@ export default function WishlistPage() {
         <Link href="/auth/login">
           <Button>Sign in</Button>
         </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
       <div>
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">Wishlist</h1>
         <p className="text-sm text-slate-500 mt-1">Vehicles you've saved</p>
