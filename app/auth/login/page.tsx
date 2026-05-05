@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Mail, Lock, ArrowRight, Car } from "lucide-react";
 import { toast } from "sonner";
+import { Captcha } from "@/components/ui/captcha";
 import { useAuthStore } from "@/store/auth.store";
 
 export default function LoginPage() {
@@ -13,12 +14,18 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [captchaValid, setCaptchaValid] = useState(false);
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const onSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email) {
       toast.error("Please enter your email");
+      return;
+    }
+
+    if (!captchaValid) {
+      toast.error("Please complete the CAPTCHA verification");
       return;
     }
 
@@ -38,7 +45,7 @@ export default function LoginPage() {
       router.push("/main/dashboard");
       setIsSubmitting(false);
     }, 500);
-  };
+  }, [email, captchaValid, mockLogin, router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1d2e] via-[#272a41] to-[#1a1d2e] flex flex-col">
@@ -65,11 +72,6 @@ export default function LoginPage() {
             <div className="mb-6 text-center">
               <h1 className="text-2xl font-bold text-[#272a41] tracking-tight mb-1">Welcome Back</h1>
               <p className="text-[#56586a] text-sm">Sign in to continue to CarsAndBikes</p>
-            </div>
-
-            {/* Test Mode Notice */}
-            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-              <strong>Test Mode:</strong> Enter any email to login. Use "agent@test.com" for agent role or "admin@test.com" for admin role.
             </div>
 
             <form onSubmit={onSubmit} className="space-y-4" noValidate>
@@ -119,6 +121,8 @@ export default function LoginPage() {
                   Forgot password?
                 </Link>
               </div>
+
+              <Captcha onChange={setCaptchaValid} />
 
               <button
                 type="submit"

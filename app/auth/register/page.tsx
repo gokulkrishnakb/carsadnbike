@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Mail, Lock, User, ArrowRight, CheckCircle2, Car, Phone, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { Captcha } from "@/components/ui/captcha";
 import { useAuthStore } from "@/store/auth.store";
 
 const benefits = [
@@ -27,6 +28,7 @@ export default function RegisterPage() {
   const [longitude, setLongitude] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [captchaValid, setCaptchaValid] = useState(false);
 
   // OTP verification state
   const [showOtpPage, setShowOtpPage] = useState(false);
@@ -82,10 +84,15 @@ export default function RegisterPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const onSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validate()) return;
+
+    if (!captchaValid) {
+      toast.error("Please complete the CAPTCHA verification");
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -96,7 +103,7 @@ export default function RegisterPage() {
       setResendTimer(30);
       toast.success(`OTP sent to ${phoneNumber}`);
     }, 1000);
-  };
+  }, [captchaValid, phoneNumber]);
 
   // Handle OTP input change
   const handleOtpChange = (index: number, value: string) => {
@@ -366,11 +373,6 @@ export default function RegisterPage() {
               <p className="text-[#56586a] text-sm mt-1">Free forever. No credit card needed.</p>
             </div>
 
-            {/* Test Mode Notice */}
-            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-              <strong>Test Mode:</strong> Use "agent@test.com" for agent role or "admin@test.com" for admin role.
-            </div>
-
             <form onSubmit={onSubmit} className="space-y-4" noValidate>
               <div>
                 <label className="block text-xs font-semibold text-[#56586a] uppercase tracking-wider mb-2">
@@ -481,6 +483,8 @@ export default function RegisterPage() {
                 </div>
                 {errors.confirmPassword && <p className="mt-1 text-xs text-red-500">{errors.confirmPassword}</p>}
               </div>
+
+              <Captcha onChange={setCaptchaValid} />
 
               <button
                 type="submit"

@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Mail, Lock, ArrowRight, Shield } from "lucide-react";
 import { toast } from "sonner";
+import { Captcha } from "@/components/ui/captcha";
 import { useAuthStore } from "@/store/auth.store";
 
 export default function AdminLoginPage() {
@@ -13,6 +14,7 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [captchaValid, setCaptchaValid] = useState(false);
 
   // If already logged in as admin, redirect to admin dashboard
   useEffect(() => {
@@ -21,11 +23,16 @@ export default function AdminLoginPage() {
     }
   }, [user, router]);
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const onSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email) {
       toast.error("Please enter your email");
+      return;
+    }
+
+    if (!captchaValid) {
+      toast.error("Please complete the CAPTCHA verification");
       return;
     }
 
@@ -52,7 +59,7 @@ export default function AdminLoginPage() {
       router.push("/admin");
       setIsSubmitting(false);
     }, 500);
-  };
+  }, [email, captchaValid, mockLogin, router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1d2e] via-[#272a41] to-[#1a1d2e] flex flex-col">
@@ -86,12 +93,6 @@ export default function AdminLoginPage() {
               <p className="text-[#56586a] text-sm">
                 Sign in with administrator credentials
               </p>
-            </div>
-
-            {/* Test Mode Notice */}
-            <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
-              <strong>Test Mode:</strong> Use an email containing "admin" (e.g.,
-              admin@test.com) to access the admin portal.
             </div>
 
             <form onSubmit={onSubmit} className="space-y-4" noValidate>
@@ -132,6 +133,8 @@ export default function AdminLoginPage() {
                   />
                 </div>
               </div>
+
+              <Captcha onChange={setCaptchaValid} />
 
               <button
                 type="submit"

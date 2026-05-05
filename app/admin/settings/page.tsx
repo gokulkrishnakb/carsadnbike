@@ -195,23 +195,6 @@ export default function AdminSettingsPage() {
               className="w-full max-w-md px-4 py-2.5 border border-slate-200 rounded text-sm text-slate-900 focus:outline-none focus:border-[#9b111e] focus:ring-2 focus:ring-red-100 transition-all"
             />
           </div>
-
-          {/* Meta Description */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-              Meta Description
-            </label>
-            <textarea
-              value={getValue("meta_description")}
-              onChange={(e) => set("meta_description", e.target.value)}
-              placeholder="Brief description for search engines"
-              rows={3}
-              className="w-full px-4 py-2.5 border border-slate-200 rounded text-sm text-slate-900 focus:outline-none focus:border-[#9b111e] focus:ring-2 focus:ring-red-100 transition-all resize-none"
-            />
-            <p className="mt-1 text-xs text-slate-500">
-              This appears in search engine results. Keep it under 160 characters.
-            </p>
-          </div>
         </div>
       </div>
 

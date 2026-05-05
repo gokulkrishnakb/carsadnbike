@@ -475,9 +475,9 @@ export default function AdminClientsPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900">Clients Monitor</h1>
+          <h1 className="text-2xl font-black text-slate-900">Risk Monitor</h1>
           <p className="text-slate-500 text-sm mt-1">
-            Track suspicious activity and potential fake listings
+            Track high-risk accounts and suspicious activity
           </p>
         </div>
         <div className="flex items-center gap-3">

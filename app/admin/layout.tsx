@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -13,6 +13,8 @@ import {
   LogOut,
   Shield,
   UserX,
+  HeartPulse,
+  ChevronUp,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import { toast } from "sonner";
@@ -20,9 +22,10 @@ import { toast } from "sonner";
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/clients", label: "Clients", icon: UserX, badge: "3" },
+  { href: "/admin/clients", label: "Risk Monitor", icon: UserX, badge: "3" },
   { href: "/admin/listings", label: "Listings", icon: Car },
   { href: "/admin/ads", label: "Advertisements", icon: Megaphone },
+  { href: "/admin/health", label: "Health & Support", icon: HeartPulse },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
@@ -30,6 +33,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { user, isPending, clearAuth } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
+  const [showLogout, setShowLogout] = useState(false);
 
   // Allow access to login page without authentication
   const isLoginPage = pathname === "/admin/login";
@@ -40,6 +44,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       router.replace("/admin/login");
     }
   }, [user, isPending, router, isLoginPage]);
+
+  // Close logout popup when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (showLogout && !target.closest('.user-card-container')) {
+        setShowLogout(false);
+      }
+    };
+
+    if (showLogout) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [showLogout]);
 
   // Render login page without layout
   if (isLoginPage) {
@@ -64,23 +83,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Shield className="w-4 h-4 text-white" />
           </div>
           <span className="font-bold text-slate-900 text-sm">Admin Portal</span>
-        </div>
-
-        {/* User Info */}
-        <div className="px-5 py-4 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-[#9b111e]/10 rounded-full flex items-center justify-center">
-              <span className="text-[#9b111e] font-bold text-sm">
-                {user.full_name?.charAt(0) || "A"}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-slate-900 truncate">
-                {user.full_name}
-              </p>
-              <p className="text-xs text-slate-500 truncate">{user.email}</p>
-            </div>
-          </div>
         </div>
 
         <nav className="flex-1 p-3 space-y-0.5">
@@ -108,20 +110,54 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           })}
         </nav>
 
-        <div className="p-3 border-t border-slate-100 space-y-0.5">
-          <Link
-            href="/main"
-            className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to app
-          </Link>
+        {/* User Info at Bottom */}
+        <div className="relative border-t border-slate-200 user-card-container">
+          {/* Logout Popup */}
+          {showLogout && (
+            <div className="absolute bottom-full left-0 right-0 mb-1 mx-3">
+              <div className="bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden">
+                <Link
+                  href="/main"
+                  className="flex items-center gap-3 px-4 py-3 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                  onClick={() => setShowLogout(false)}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to app
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-slate-100"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* User Card - Clickable */}
           <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+            onClick={() => setShowLogout(!showLogout)}
+            className="w-full px-5 py-4 hover:bg-slate-50 transition-colors text-left"
           >
-            <LogOut className="h-4 w-4" />
-            Logout
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-[#9b111e]/10 rounded-full flex items-center justify-center shrink-0">
+                <span className="text-[#9b111e] font-bold text-sm">
+                  {user.full_name?.charAt(0) || "A"}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-slate-900 truncate">
+                  {user.full_name}
+                </p>
+                <p className="text-xs text-slate-500 truncate">{user.email}</p>
+              </div>
+              <ChevronUp
+                className={`h-4 w-4 text-slate-400 transition-transform ${
+                  showLogout ? "" : "rotate-180"
+                }`}
+              />
+            </div>
           </button>
         </div>
       </aside>
