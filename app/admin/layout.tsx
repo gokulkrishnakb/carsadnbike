@@ -75,9 +75,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      {/* Sidebar */}
-      <aside className="w-56 bg-white border-r border-slate-200 flex flex-col shrink-0">
+    <div className="min-h-screen bg-slate-50">
+      {/* Sidebar - Fixed */}
+      <aside className="fixed top-0 left-0 w-56 h-screen bg-white border-r border-slate-200 flex flex-col z-10">
         <div className="h-16 border-b border-slate-200 flex items-center px-5 gap-3">
           <div className="w-7 h-7 bg-[#9b111e] rounded flex items-center justify-center">
             <Shield className="w-4 h-4 text-white" />
@@ -85,7 +85,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <span className="font-bold text-slate-900 text-sm">Admin Portal</span>
         </div>
 
-        <nav className="flex-1 p-3 space-y-0.5">
+        <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
           {NAV.map(({ href, label, icon: Icon, exact, badge }) => {
             const active = exact ? pathname === href : pathname.startsWith(href) && href !== "/admin";
             return (
@@ -162,8 +162,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </aside>
 
-      {/* Main */}
-      <main className="flex-1 overflow-auto">
+      {/* Main - With left margin for fixed sidebar */}
+      <main className="ml-56">
         <div className="p-8">{children}</div>
       </main>
     </div>
