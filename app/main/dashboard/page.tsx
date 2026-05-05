@@ -306,8 +306,11 @@ export default function DashboardPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        {/* Ad Banner */}
-        <div className="mb-6 relative overflow-hidden bg-gradient-to-r from-[#9b111e] to-[#d4343f] shadow-lg flex">
+        <div className="flex gap-6">
+          {/* Main Content */}
+          <div className="flex-1 min-w-0">
+            {/* Top Ad Banner */}
+            <div className="mb-6 relative overflow-hidden bg-gradient-to-r from-[#9b111e] to-[#d4343f] shadow-lg flex">
           {/* Ad Image */}
           <div className="hidden md:block w-64 h-40 relative shrink-0">
             <AnimatePresence mode="wait">
@@ -372,8 +375,8 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* Main Listings Card */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            {/* Main Listings Card */}
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           {/* Toolbar */}
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between gap-4">
             {/* Tabs */}
@@ -544,6 +547,89 @@ export default function DashboardPage() {
               )}
             </>
           )}
+            </div>
+
+            {/* Bottom Ad Banner */}
+            <div className="mt-6 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl shadow-lg p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="px-2 py-0.5 bg-white/20 text-white text-xs font-medium rounded">AD</span>
+                    <p className="text-white/80 text-sm font-medium">Premium Services</p>
+                  </div>
+                  <h3 className="text-white text-lg font-bold mb-1">Sell Your Car 3x Faster!</h3>
+                  <p className="text-white/70 text-sm">Premium listing with featured placement - ₹199/month</p>
+                </div>
+                <button className="hidden md:block px-5 py-2.5 bg-white text-purple-600 font-bold text-sm rounded-lg hover:bg-gray-100 transition-colors shadow-md">
+                  Learn More
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Sidebar - Ads */}
+          <div className="hidden xl:block w-80 shrink-0 space-y-6">
+            {/* Sidebar Ad 1 */}
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+              <div className="h-32 bg-gradient-to-br from-emerald-500 to-teal-500 p-4 flex flex-col justify-end">
+                <span className="px-2 py-0.5 bg-white/20 text-white text-xs font-medium rounded w-fit mb-2">AD</span>
+                <h4 className="text-white font-bold text-sm">Insurance Renewal?</h4>
+              </div>
+              <div className="p-4">
+                <p className="text-sm text-gray-600 mb-3">Get instant quotes from 15+ insurers. Save up to 85%!</p>
+                <button className="w-full px-4 py-2 bg-emerald-500 text-white font-semibold text-sm rounded-lg hover:bg-emerald-600 transition-colors">
+                  Get Quote
+                </button>
+              </div>
+            </div>
+
+            {/* Sidebar Ad 2 */}
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+              <div className="h-32 bg-gradient-to-br from-orange-500 to-red-500 p-4 flex flex-col justify-end">
+                <span className="px-2 py-0.5 bg-white/20 text-white text-xs font-medium rounded w-fit mb-2">AD</span>
+                <h4 className="text-white font-bold text-sm">Need a Car Loan?</h4>
+              </div>
+              <div className="p-4">
+                <p className="text-sm text-gray-600 mb-3">Quick approval • Low interest rates • Compare 20+ banks</p>
+                <button className="w-full px-4 py-2 bg-orange-500 text-white font-semibold text-sm rounded-lg hover:bg-orange-600 transition-colors">
+                  Apply Now
+                </button>
+              </div>
+            </div>
+
+            {/* Sidebar Ad 3 */}
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+              <div className="h-32 bg-gradient-to-br from-blue-500 to-cyan-500 p-4 flex flex-col justify-end">
+                <span className="px-2 py-0.5 bg-white/20 text-white text-xs font-medium rounded w-fit mb-2">AD</span>
+                <h4 className="text-white font-bold text-sm">Car Inspection</h4>
+              </div>
+              <div className="p-4">
+                <p className="text-sm text-gray-600 mb-3">150-point certified inspection. Buy with confidence!</p>
+                <button className="w-full px-4 py-2 bg-blue-500 text-white font-semibold text-sm rounded-lg hover:bg-blue-600 transition-colors">
+                  Book Now
+                </button>
+              </div>
+            </div>
+
+            {/* Sidebar Stats Card */}
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-6 text-white">
+              <h4 className="font-bold mb-4">Quick Stats</h4>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                  <span className="text-sm text-white/70">Total Listings</span>
+                  <span className="text-lg font-bold">{totalListings}</span>
+                </div>
+                <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                  <span className="text-sm text-white/70">Total Views</span>
+                  <span className="text-lg font-bold">{totalViews.toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-white/70">Portfolio Value</span>
+                  <span className="text-lg font-bold">{formatPrice(totalValue)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
