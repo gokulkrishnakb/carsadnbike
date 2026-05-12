@@ -8,7 +8,7 @@ import {
   Car, Bike, Truck, Shield, MessageSquare, Zap, Plus,
   DollarSign, Calculator, BarChart3, Gauge, TrendingUp,
   Sparkles, Play, ChevronDown, Scale, Fuel, Battery, Leaf, Flame, Calendar, Eye,
-  X, Crosshair, Building2, Check
+  X, Crosshair, Building2, Check, ExternalLink, CheckCircle, IndianRupee, Users
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatPrice } from "@/lib/utils";
@@ -211,6 +211,7 @@ function HomeInner() {
   const [selectedMake, setSelectedMake] = useState("");
   const [selectedBudget, setSelectedBudget] = useState("");
   const [showAiTooltip, setShowAiTooltip] = useState(false);
+  const [showPopupAd, setShowPopupAd] = useState(true);
 
   // Using dummy data instead of backend API
   const listings = FEATURED_LISTINGS;
@@ -259,6 +260,16 @@ function HomeInner() {
     }, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  // Show popup ad every 10 seconds after closing
+  useEffect(() => {
+    if (!showPopupAd) {
+      const timer = setTimeout(() => {
+        setShowPopupAd(true);
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [showPopupAd]);
 
   const POPULAR_CITIES = [
     { name: "Mumbai", icon: "🏛️" },
@@ -860,6 +871,99 @@ function HomeInner() {
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════
+          THIRD-PARTY AD BANNER
+          ═══════════════════════════════════════════════════════════ */}
+      <section className="py-8 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          {/* Sponsored Label */}
+          <div className="flex items-center justify-center mb-2">
+            <span className="text-xs text-slate-400 uppercase tracking-wider">Sponsored</span>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <a
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block relative bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group"
+            >
+              {/* Background Car Image */}
+              <div className="absolute inset-0 opacity-30">
+                <img
+                  src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1920&q=80"
+                  alt="Car Insurance Ad"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800" />
+              </div>
+
+              <div className="relative flex flex-col md:flex-row items-center justify-between gap-6 p-8 md:p-10">
+                {/* Left Content */}
+                <div className="flex-1 text-center md:text-left">
+                  {/* Brand Logo/Name */}
+                  <div className="mb-3">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full mb-3">
+                      <Shield className="w-5 h-5 text-blue-600" />
+                      <span className="text-lg font-black text-blue-600">SecureShield Insurance</span>
+                    </div>
+                  </div>
+
+                  <h2 className="text-3xl md:text-4xl font-black text-white mb-3">
+                    Comprehensive Car Insurance
+                  </h2>
+                  <p className="text-white/90 text-lg mb-2 max-w-xl">
+                    Starting at just ₹2,999/year
+                  </p>
+                  <p className="text-white/80 text-sm mb-6 max-w-xl">
+                    Get instant quotes • Zero paperwork • Claim settled in 24 hours
+                  </p>
+
+                  <div className="flex flex-wrap items-center gap-3 justify-center md:justify-start">
+                    <span className="inline-flex items-center gap-2 bg-white text-blue-600 px-6 py-3 rounded-full font-bold shadow-lg group-hover:scale-105 transition-all">
+                      Get Free Quote
+                      <ExternalLink className="w-4 h-4" />
+                    </span>
+                  </div>
+                </div>
+
+                {/* Right Benefits */}
+                <div className="flex-shrink-0">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20">
+                      <CheckCircle className="w-8 h-8 text-white mx-auto mb-2" />
+                      <p className="text-white text-xs font-semibold">Instant Coverage</p>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20">
+                      <Shield className="w-8 h-8 text-white mx-auto mb-2" />
+                      <p className="text-white text-xs font-semibold">100% Claim Rate</p>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20">
+                      <IndianRupee className="w-8 h-8 text-white mx-auto mb-2" />
+                      <p className="text-white text-xs font-semibold">Best Prices</p>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20">
+                      <Users className="w-8 h-8 text-white mx-auto mb-2" />
+                      <p className="text-white text-xs font-semibold">2M+ Customers</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* AD Badge */}
+              <div className="absolute top-3 right-3 px-2 py-1 bg-black/50 backdrop-blur-sm text-white text-xs font-medium rounded">
+                ADVERTISEMENT
+              </div>
+            </a>
+          </motion.div>
         </div>
       </section>
 
@@ -1988,15 +2092,73 @@ function HomeInner() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════
-          AI CHATBOT BUTTON
-          ═══════════════════════════════════════════════════════════ */}
-      <Link
-        href="/main/chat"
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-[#9b111e] text-white rounded-full shadow-lg shadow-red-500/30 flex items-center justify-center hover:bg-[#b81f22] hover:scale-110 transition-all duration-300"
-      >
-        <MessageSquare className="w-6 h-6" />
-      </Link>
+      {/* Popup Ad - Bottom Right */}
+      <AnimatePresence>
+        {showPopupAd && (
+          <motion.div
+            initial={{ opacity: 0, y: 100, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 100, scale: 0.8 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="fixed bottom-6 right-6 z-50 w-80 bg-white shadow-2xl border border-gray-300 overflow-hidden"
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setShowPopupAd(false)}
+              className="absolute top-2 right-2 z-10 w-8 h-8 bg-black/70 hover:bg-black flex items-center justify-center transition-colors"
+            >
+              <X className="w-4 h-4 text-white" />
+            </button>
+
+            {/* Ad Content */}
+            <div className="relative">
+              {/* Ad Image */}
+              <div className="relative h-44">
+                <img
+                  src="https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=400&q=80"
+                  alt="Premium Car Ad"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                <div className="absolute bottom-3 left-3 right-3">
+                  <p className="text-2xl font-black text-white">SELL FASTER!</p>
+                  <p className="text-sm text-white/90">List Your Car Today</p>
+                </div>
+              </div>
+
+              {/* Ad Details */}
+              <div className="p-4">
+                <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Special Offer</p>
+                <h3 className="font-bold text-gray-900 text-lg mb-2">
+                  Free Premium Listing - First Month!
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Get featured placement and reach thousands of buyers instantly.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowPopupAd(false)}
+                    className="flex-1 py-2.5 bg-[#9b111e] hover:bg-[#7a0d17] text-white text-sm font-bold transition-colors"
+                  >
+                    List Now
+                  </button>
+                  <button
+                    onClick={() => setShowPopupAd(false)}
+                    className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium transition-colors"
+                  >
+                    Later
+                  </button>
+                </div>
+              </div>
+
+              {/* Ad Badge */}
+              <div className="absolute top-2 left-2 px-2 py-0.5 bg-black/50 text-white text-[10px] font-medium">
+                AD
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

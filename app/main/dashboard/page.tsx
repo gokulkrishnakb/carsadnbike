@@ -11,7 +11,7 @@ import {
   Package, Clock, CheckCircle, Edit, ChevronRight, FileSpreadsheet,
   AlertCircle, X, ImagePlus, MapPin, IndianRupee, Gauge, ChevronLeft,
   MoreHorizontal, ExternalLink, Trash2, Video, Fuel, Settings2, Users,
-  Shield, Wrench, FileText, ChevronDown, ChevronUp
+  Shield, Wrench, FileText, ChevronDown, ChevronUp, Star, Zap, Crown, Sparkles
 } from "lucide-react";
 import { toast } from "sonner";
 import { listingsService } from "@/services/listings.service";
@@ -61,10 +61,11 @@ export default function DashboardPage() {
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [bulkVehicles, setBulkVehicles] = useState<BulkVehicle[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"all" | "active" | "pending" | "sold">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "active" | "pending" | "sold" | "archived">("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [currentAd, setCurrentAd] = useState(0);
   const itemsPerPage = 8;
+  const [showPopupAd, setShowPopupAd] = useState(true);
 
   const ads = [
     {
@@ -97,19 +98,88 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, []);
 
+  // Show popup ad every 10 seconds after closing
+  useEffect(() => {
+    if (!showPopupAd) {
+      const timer = setTimeout(() => {
+        setShowPopupAd(true);
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [showPopupAd]);
+
   const { data: listingsData, isLoading, refetch } = useQuery({
     queryKey: ["my-listings", user?.id],
     queryFn: () => listingsService.list({ seller_id: user?.id, size: 50 }),
     enabled: !!user?.id,
   });
 
-  const myListings = listingsData?.items ?? [];
+  // Dummy listings for demonstration
+  const dummyListings = [
+    {
+      id: "dummy-1",
+      title: "2023 BMW 3 Series M Sport",
+      make: "BMW",
+      model: "3 Series",
+      year: 2023,
+      price: 4500000,
+      mileage: 12000,
+      status: "active",
+      condition: "used",
+      vehicle_type: "car",
+      location: "Mumbai, Maharashtra",
+      fuel_type: "petrol",
+      transmission: "automatic",
+      views: 245,
+      images: ["https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=80"],
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: "dummy-2",
+      title: "2024 Royal Enfield Classic 350",
+      make: "Royal Enfield",
+      model: "Classic 350",
+      year: 2024,
+      price: 195000,
+      mileage: 2500,
+      status: "pending",
+      condition: "used",
+      vehicle_type: "bike",
+      location: "Delhi, NCR",
+      fuel_type: "petrol",
+      transmission: "manual",
+      views: 87,
+      images: ["https://images.unsplash.com/photo-1558981359-219d6364c9c8?auto=format&fit=crop&w=800&q=80"],
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: "dummy-3",
+      title: "2022 Honda Civic RS Turbo",
+      make: "Honda",
+      model: "Civic",
+      year: 2022,
+      price: 2800000,
+      mileage: 18500,
+      status: "sold",
+      condition: "used",
+      vehicle_type: "car",
+      location: "Bangalore, Karnataka",
+      fuel_type: "petrol",
+      transmission: "cvt",
+      views: 312,
+      images: ["https://images.unsplash.com/photo-1606611013016-969c19ba27bb?auto=format&fit=crop&w=800&q=80"],
+      created_at: new Date().toISOString(),
+    },
+  ];
+
+  const myListings = [...(listingsData?.items ?? []), ...dummyListings];
 
   // Stats
   const totalListings = myListings.length;
   const activeListings = myListings.filter(l => l.status === "active").length;
   const pendingListings = myListings.filter(l => l.status === "pending").length;
   const soldListings = myListings.filter(l => l.status === "sold").length;
+  const archivedListings = myListings.filter(l => l.status === "archived").length;
   const totalViews = myListings.reduce((acc, l) => acc + (l.views || 0), 0);
   const totalValue = myListings.reduce((acc, l) => acc + (l.price || 0), 0);
 
@@ -126,7 +196,7 @@ export default function DashboardPage() {
     currentPage * itemsPerPage
   );
 
-  const handleTabChange = (tab: "all" | "active" | "pending" | "sold") => {
+  const handleTabChange = (tab: "all" | "active" | "pending" | "sold" | "archived") => {
     setActiveTab(tab);
     setCurrentPage(1);
   };
@@ -377,17 +447,18 @@ export default function DashboardPage() {
           {/* Toolbar */}
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between gap-4">
             {/* Tabs */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 overflow-x-auto">
               {[
                 { key: "all", label: "All", count: totalListings },
                 { key: "active", label: "Active", count: activeListings },
                 { key: "pending", label: "Pending", count: pendingListings },
                 { key: "sold", label: "Sold", count: soldListings },
+                { key: "archived", label: "Archived", count: archivedListings },
               ].map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => handleTabChange(tab.key as any)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                     activeTab === tab.key
                       ? "bg-gray-900 text-white"
                       : "text-gray-600 hover:bg-gray-100"
@@ -441,7 +512,10 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.03 }}
                     className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all cursor-pointer"
-                    onClick={() => router.push(`/main/listings/${listing.id}`)}
+                    onClick={() => {
+                      // Go to the owner's separate detail page
+                      router.push(`/main/dashboard/${listing.id}`);
+                    }}
                   >
                     {/* Image */}
                     <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
@@ -461,7 +535,8 @@ export default function DashboardPage() {
                       <div className={`absolute top-2 left-2 px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wide ${
                         listing.status === "active" ? "bg-emerald-500 text-white" :
                         listing.status === "pending" ? "bg-amber-500 text-white" :
-                        listing.status === "sold" ? "bg-gray-800 text-white" : "bg-red-500 text-white"
+                        listing.status === "sold" ? "bg-gray-800 text-white" :
+                        listing.status === "archived" ? "bg-slate-500 text-white" : "bg-red-500 text-white"
                       }`}>
                         {listing.status}
                       </div>
@@ -486,22 +561,12 @@ export default function DashboardPage() {
                       </div>
                       <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
                         <p className="text-lg font-bold text-[#9b111e]">{formatPrice(listing.price)}</p>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Link
-                            href={`/main/listings/${listing.id}/edit`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Link>
-                          <Link
-                            href={`/main/listings/${listing.id}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                          </Link>
-                        </div>
+                        {listing.is_featured && (
+                          <div className="flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full">
+                            <Star className="w-3 h-3 fill-amber-500" />
+                            <span className="text-[10px] font-semibold">Featured</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </motion.div>
@@ -628,6 +693,75 @@ export default function DashboardPage() {
                 </div>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Popup Ad - Bottom Right */}
+      <AnimatePresence>
+        {showPopupAd && (
+          <motion.div
+            initial={{ opacity: 0, y: 100, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 100, scale: 0.8 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="fixed bottom-4 right-4 z-50 w-80 bg-white shadow-2xl border border-gray-300 overflow-hidden"
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setShowPopupAd(false)}
+              className="absolute top-2 right-2 z-10 w-8 h-8 bg-black/70 hover:bg-black flex items-center justify-center transition-colors"
+            >
+              <X className="w-4 h-4 text-white" />
+            </button>
+
+            {/* Ad Content */}
+            <div className="relative">
+              {/* Ad Image */}
+              <div className="relative h-44">
+                <Image
+                  src="https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=400&q=80"
+                  alt="Premium Car Ad"
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                <div className="absolute bottom-3 left-3 right-3">
+                  <p className="text-2xl font-black text-white">BOOST YOUR SALES!</p>
+                  <p className="text-sm text-white/90">Premium Features Now Available</p>
+                </div>
+              </div>
+
+              {/* Ad Details */}
+              <div className="p-4">
+                <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Exclusive Offer</p>
+                <h3 className="font-bold text-gray-900 text-lg mb-2">
+                  Featured Listings - 40% Off!
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Get your vehicles featured at the top and sell 3x faster. Limited time offer!
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowPopupAd(false)}
+                    className="flex-1 py-2.5 bg-[#9b111e] hover:bg-[#7a0d17] text-white text-sm font-bold transition-colors"
+                  >
+                    Upgrade Now
+                  </button>
+                  <button
+                    onClick={() => setShowPopupAd(false)}
+                    className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium transition-colors"
+                  >
+                    Later
+                  </button>
+                </div>
+              </div>
+
+              {/* Ad Badge */}
+              <div className="absolute top-2 left-2 px-2 py-0.5 bg-black/50 text-white text-[10px] font-medium">
+                AD
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

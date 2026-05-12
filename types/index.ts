@@ -37,6 +37,7 @@ export interface Listing {
   location: string;
   images: string[];
   status: ListingStatus;
+  is_featured?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -141,6 +142,7 @@ export interface Advertisement {
   is_active: boolean;
   start_date?: string;
   end_date?: string;
+  duration_minutes_per_day?: number;
   impressions: number;
   clicks: number;
   created_at: string;

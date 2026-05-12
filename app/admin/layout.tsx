@@ -77,7 +77,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Sidebar - Fixed */}
-      <aside className="fixed top-0 left-0 w-56 h-screen bg-white border-r border-slate-200 flex flex-col z-10">
+      <aside className="fixed top-0 left-0 w-56 h-screen bg-white border-r border-slate-200 flex flex-col z-10 shrink-0">
         <div className="h-16 border-b border-slate-200 flex items-center px-5 gap-3">
           <div className="w-7 h-7 bg-[#9b111e] rounded flex items-center justify-center">
             <Shield className="w-4 h-4 text-white" />
@@ -163,8 +163,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main - With left margin for fixed sidebar */}
-      <main className="ml-56">
-        <div className="p-8">{children}</div>
+      <main className="ml-56 min-h-screen w-[calc(100vw-14rem)] overflow-x-hidden">
+        <div className="p-8 w-full max-w-full">{children}</div>
       </main>
     </div>
   );

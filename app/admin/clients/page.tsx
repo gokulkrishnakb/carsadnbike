@@ -1,13 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import {
   AlertTriangle,
-  MapPin,
-  Car,
-  Bike,
-  ChevronDown,
-  ChevronUp,
   Ban,
   CheckCircle,
   Eye,
@@ -18,24 +14,19 @@ import {
   ShieldAlert,
   User,
   Building2,
+  Image as ImageIcon,
+  Users,
+  ChevronDown,
+  ChevronUp,
   Flag,
-  Clock,
+  ExternalLink,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 // Types
-interface ClientListing {
-  id: string;
-  title: string;
-  type: "car" | "bike";
-  location: string;
-  price: number;
-  created_at: string;
-}
-
-interface SuspiciousClient {
+interface DuplicateUser {
   id: string;
   email: string;
   full_name: string;
@@ -44,186 +35,201 @@ interface SuspiciousClient {
   is_active: boolean;
   is_verified: boolean;
   created_at: string;
-  last_login?: string;
-  // Suspicious activity data
-  total_listings: number;
-  listings: ClientListing[];
-  unique_locations: string[];
-  suspicion_score: number; // 0-100
-  suspicion_reasons: string[];
-  flags: {
-    multiple_locations: boolean;
-    rapid_posting: boolean;
-    duplicate_content: boolean;
-    price_anomaly: boolean;
-    unverified_contact: boolean;
-  };
+  listing_id: string;
+  listing_title: string;
+  listing_price: number;
+  posted_date: string;
 }
 
-// Dummy suspicious clients data
-const SUSPICIOUS_CLIENTS: SuspiciousClient[] = [
+interface DuplicateImageGroup {
+  id: string;
+  image_url: string;
+  image_hash: string; // Perceptual hash for detecting similar images
+  total_uploads: number;
+  unique_users: number;
+  users: DuplicateUser[];
+  risk_level: "critical" | "high" | "medium" | "low";
+  first_upload: string;
+  last_upload: string;
+}
+
+// Dummy data - In production, this would come from backend image analysis
+const DUPLICATE_IMAGE_GROUPS: DuplicateImageGroup[] = [
   {
-    id: "client-1",
-    email: "quickseller99@gmail.com",
-    full_name: "Raj Kumar",
-    phone: "+91 98765 43210",
-    role: "user",
-    is_active: true,
-    is_verified: false,
-    created_at: "2024-03-15T10:00:00Z",
-    last_login: "2024-03-28T14:30:00Z",
-    total_listings: 12,
-    listings: [
-      { id: "l1", title: "2023 Honda City ZX", type: "car", location: "Mumbai, MH", price: 1250000, created_at: "2024-03-20T10:00:00Z" },
-      { id: "l2", title: "2022 Maruti Swift VXI", type: "car", location: "Delhi, DL", price: 650000, created_at: "2024-03-20T11:00:00Z" },
-      { id: "l3", title: "2024 Hyundai Creta SX", type: "car", location: "Bangalore, KA", price: 1850000, created_at: "2024-03-21T09:00:00Z" },
-      { id: "l4", title: "2023 Royal Enfield Classic", type: "bike", location: "Chennai, TN", price: 195000, created_at: "2024-03-21T10:30:00Z" },
-      { id: "l5", title: "2022 KTM Duke 390", type: "bike", location: "Pune, MH", price: 285000, created_at: "2024-03-22T08:00:00Z" },
+    id: "dup-1",
+    image_url: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=80",
+    image_hash: "a1b2c3d4e5f6",
+    total_uploads: 4,
+    unique_users: 4,
+    first_upload: "2024-03-15T10:00:00Z",
+    last_upload: "2024-03-28T14:30:00Z",
+    risk_level: "critical",
+    users: [
+      {
+        id: "user-1",
+        email: "rajkumar99@gmail.com",
+        full_name: "Raj Kumar",
+        phone: "+91 98765 43210",
+        role: "user",
+        is_active: true,
+        is_verified: false,
+        created_at: "2024-03-15T10:00:00Z",
+        listing_id: "list-1",
+        listing_title: "2023 BMW 3 Series - Pristine Condition",
+        listing_price: 4500000,
+        posted_date: "2024-03-15T10:00:00Z",
+      },
+      {
+        id: "user-2",
+        email: "autodeals.mumbai@yahoo.com",
+        full_name: "Auto Deals Mumbai",
+        phone: "+91 99887 76655",
+        role: "dealer",
+        is_active: true,
+        is_verified: false,
+        created_at: "2024-03-18T08:00:00Z",
+        listing_id: "list-2",
+        listing_title: "2024 BMW 330i M Sport - Best Price",
+        listing_price: 5200000,
+        posted_date: "2024-03-20T11:00:00Z",
+      },
+      {
+        id: "user-3",
+        email: "quicksale.delhi@gmail.com",
+        full_name: "Quick Sale Delhi",
+        phone: undefined,
+        role: "user",
+        is_active: true,
+        is_verified: false,
+        created_at: "2024-03-22T14:00:00Z",
+        listing_id: "list-3",
+        listing_title: "BMW 3 Series 2023 - Urgent Sale",
+        listing_price: 4200000,
+        posted_date: "2024-03-25T09:00:00Z",
+      },
+      {
+        id: "user-4",
+        email: "premium.cars.bangalore@hotmail.com",
+        full_name: "Premium Cars Bangalore",
+        phone: "+91 88776 54321",
+        role: "dealer",
+        is_active: true,
+        is_verified: true,
+        created_at: "2024-02-01T12:00:00Z",
+        listing_id: "list-4",
+        listing_title: "2023 BMW 3 Series - Excellent Condition",
+        listing_price: 4800000,
+        posted_date: "2024-03-28T14:30:00Z",
+      },
     ],
-    unique_locations: ["Mumbai, MH", "Delhi, DL", "Bangalore, KA", "Chennai, TN", "Pune, MH"],
-    suspicion_score: 85,
-    suspicion_reasons: [
-      "12 listings across 5 different cities in 1 week",
-      "Unverified phone number",
-      "Prices 15-20% below market average",
-      "Similar description patterns across listings",
-    ],
-    flags: {
-      multiple_locations: true,
-      rapid_posting: true,
-      duplicate_content: true,
-      price_anomaly: true,
-      unverified_contact: true,
-    },
   },
   {
-    id: "client-2",
-    email: "autodealer.fake@yahoo.com",
-    full_name: "Premium Auto Sales",
-    phone: "+91 99887 76655",
-    role: "dealer",
-    is_active: true,
-    is_verified: true,
-    created_at: "2024-02-01T08:00:00Z",
-    last_login: "2024-03-27T16:45:00Z",
-    total_listings: 28,
-    listings: [
-      { id: "l6", title: "2024 BMW 3 Series", type: "car", location: "Hyderabad, TG", price: 4500000, created_at: "2024-03-18T10:00:00Z" },
-      { id: "l7", title: "2023 Mercedes C-Class", type: "car", location: "Kolkata, WB", price: 5200000, created_at: "2024-03-19T11:00:00Z" },
-      { id: "l8", title: "2024 Audi A4", type: "car", location: "Ahmedabad, GJ", price: 4800000, created_at: "2024-03-20T09:00:00Z" },
+    id: "dup-2",
+    image_url: "https://images.unsplash.com/photo-1606611013016-969c19ba27bb?auto=format&fit=crop&w=800&q=80",
+    image_hash: "b2c3d4e5f6g7",
+    total_uploads: 3,
+    unique_users: 3,
+    first_upload: "2024-03-20T10:00:00Z",
+    last_upload: "2024-03-27T16:45:00Z",
+    risk_level: "high",
+    users: [
+      {
+        id: "user-5",
+        email: "honda.specialist@gmail.com",
+        full_name: "Amit Sharma",
+        phone: "+91 77665 54433",
+        role: "user",
+        is_active: true,
+        is_verified: false,
+        created_at: "2024-03-10T09:00:00Z",
+        listing_id: "list-5",
+        listing_title: "2022 Honda Civic - Single Owner",
+        listing_price: 2800000,
+        posted_date: "2024-03-20T10:00:00Z",
+      },
+      {
+        id: "user-6",
+        email: "carsellers.pune@yahoo.com",
+        full_name: "Car Sellers Pune",
+        phone: "+91 91827 36455",
+        role: "dealer",
+        is_active: true,
+        is_verified: true,
+        created_at: "2024-01-15T08:00:00Z",
+        listing_id: "list-6",
+        listing_title: "Honda Civic 2022 - Top Variant",
+        listing_price: 2950000,
+        posted_date: "2024-03-23T11:00:00Z",
+      },
+      {
+        id: "user-7",
+        email: "deals.unlimited@gmail.com",
+        full_name: "Deals Unlimited",
+        phone: undefined,
+        role: "user",
+        is_active: false,
+        is_verified: false,
+        created_at: "2024-03-25T14:00:00Z",
+        listing_id: "list-7",
+        listing_title: "2022 Honda Civic Sport - Great Deal",
+        listing_price: 2650000,
+        posted_date: "2024-03-27T16:45:00Z",
+      },
     ],
-    unique_locations: ["Hyderabad, TG", "Kolkata, WB", "Ahmedabad, GJ", "Jaipur, RJ", "Lucknow, UP"],
-    suspicion_score: 72,
-    suspicion_reasons: [
-      "Dealer operating across 5 states without branch offices",
-      "Stock photos detected in 60% of listings",
-      "No physical showroom address provided",
-    ],
-    flags: {
-      multiple_locations: true,
-      rapid_posting: false,
-      duplicate_content: true,
-      price_anomaly: false,
-      unverified_contact: false,
-    },
   },
   {
-    id: "client-3",
-    email: "bike.flipper@hotmail.com",
-    full_name: "Amit Sharma",
-    phone: undefined,
-    role: "user",
-    is_active: true,
-    is_verified: false,
-    created_at: "2024-03-25T14:00:00Z",
-    last_login: "2024-03-28T09:15:00Z",
-    total_listings: 8,
-    listings: [
-      { id: "l9", title: "2023 Yamaha R15 V4", type: "bike", location: "Noida, UP", price: 165000, created_at: "2024-03-26T10:00:00Z" },
-      { id: "l10", title: "2024 Bajaj Pulsar NS200", type: "bike", location: "Gurgaon, HR", price: 142000, created_at: "2024-03-26T10:30:00Z" },
-      { id: "l11", title: "2023 TVS Apache RTR 200", type: "bike", location: "Faridabad, HR", price: 128000, created_at: "2024-03-26T11:00:00Z" },
+    id: "dup-3",
+    image_url: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=800&q=80",
+    image_hash: "c3d4e5f6g7h8",
+    total_uploads: 2,
+    unique_users: 2,
+    first_upload: "2024-03-18T10:00:00Z",
+    last_upload: "2024-03-26T11:00:00Z",
+    risk_level: "medium",
+    users: [
+      {
+        id: "user-8",
+        email: "luxury.cars.delhi@gmail.com",
+        full_name: "Luxury Cars Delhi",
+        phone: "+91 98123 45678",
+        role: "dealer",
+        is_active: true,
+        is_verified: true,
+        created_at: "2024-02-10T12:00:00Z",
+        listing_id: "list-8",
+        listing_title: "2024 Mercedes C-Class - Brand New",
+        listing_price: 6200000,
+        posted_date: "2024-03-18T10:00:00Z",
+      },
+      {
+        id: "user-9",
+        email: "merc.specialist@hotmail.com",
+        full_name: "Vikram Singh",
+        phone: "+91 88990 01122",
+        role: "user",
+        is_active: true,
+        is_verified: false,
+        created_at: "2024-03-20T09:00:00Z",
+        listing_id: "list-9",
+        listing_title: "Mercedes C-Class 2024 - Like New",
+        listing_price: 5800000,
+        posted_date: "2024-03-26T11:00:00Z",
+      },
     ],
-    unique_locations: ["Noida, UP", "Gurgaon, HR", "Faridabad, HR", "Greater Noida, UP"],
-    suspicion_score: 68,
-    suspicion_reasons: [
-      "8 bike listings in 3 days - new account",
-      "No phone number provided",
-      "All listings in NCR region but different cities",
-      "Prices consistently below market rate",
-    ],
-    flags: {
-      multiple_locations: true,
-      rapid_posting: true,
-      duplicate_content: false,
-      price_anomaly: true,
-      unverified_contact: true,
-    },
-  },
-  {
-    id: "client-4",
-    email: "genuine.seller@gmail.com",
-    full_name: "Priya Patel",
-    phone: "+91 88776 54321",
-    role: "user",
-    is_active: true,
-    is_verified: true,
-    created_at: "2024-01-10T12:00:00Z",
-    last_login: "2024-03-28T11:00:00Z",
-    total_listings: 3,
-    listings: [
-      { id: "l12", title: "2020 Honda Activa 6G", type: "bike", location: "Surat, GJ", price: 65000, created_at: "2024-02-15T10:00:00Z" },
-      { id: "l13", title: "2019 Maruti Alto K10", type: "car", location: "Surat, GJ", price: 320000, created_at: "2024-03-01T11:00:00Z" },
-      { id: "l14", title: "2021 Hyundai i20 Asta", type: "car", location: "Surat, GJ", price: 720000, created_at: "2024-03-20T09:00:00Z" },
-    ],
-    unique_locations: ["Surat, GJ"],
-    suspicion_score: 15,
-    suspicion_reasons: [],
-    flags: {
-      multiple_locations: false,
-      rapid_posting: false,
-      duplicate_content: false,
-      price_anomaly: false,
-      unverified_contact: false,
-    },
-  },
-  {
-    id: "client-5",
-    email: "deals.unlimited@gmail.com",
-    full_name: "Vikram Singh",
-    phone: "+91 77665 54433",
-    role: "user",
-    is_active: false,
-    is_verified: false,
-    created_at: "2024-03-10T09:00:00Z",
-    last_login: "2024-03-20T15:30:00Z",
-    total_listings: 15,
-    listings: [
-      { id: "l15", title: "2024 Tata Nexon EV", type: "car", location: "Chandigarh, CH", price: 1400000, created_at: "2024-03-12T10:00:00Z" },
-      { id: "l16", title: "2023 MG ZS EV", type: "car", location: "Mohali, PB", price: 2100000, created_at: "2024-03-12T11:00:00Z" },
-    ],
-    unique_locations: ["Chandigarh, CH", "Mohali, PB", "Panchkula, HR", "Ambala, HR"],
-    suspicion_score: 92,
-    suspicion_reasons: [
-      "Account suspended - multiple fraud reports",
-      "15 listings posted in 2 days",
-      "Reported by 4 different users for fake listings",
-      "Payment requests outside platform",
-    ],
-    flags: {
-      multiple_locations: true,
-      rapid_posting: true,
-      duplicate_content: true,
-      price_anomaly: true,
-      unverified_contact: true,
-    },
   },
 ];
 
-function getSuspicionLevel(score: number): { label: string; color: string; bg: string } {
-  if (score >= 80) return { label: "High Risk", color: "text-red-700", bg: "bg-red-100" };
-  if (score >= 50) return { label: "Medium Risk", color: "text-amber-700", bg: "bg-amber-100" };
-  if (score >= 25) return { label: "Low Risk", color: "text-yellow-700", bg: "bg-yellow-100" };
-  return { label: "Safe", color: "text-emerald-700", bg: "bg-emerald-100" };
+function getRiskLevelInfo(level: string): { label: string; color: string; bg: string; border: string } {
+  switch (level) {
+    case "critical":
+      return { label: "Critical Risk", color: "text-red-700", bg: "bg-red-100", border: "border-red-300" };
+    case "high":
+      return { label: "High Risk", color: "text-orange-700", bg: "bg-orange-100", border: "border-orange-300" };
+    case "medium":
+      return { label: "Medium Risk", color: "text-amber-700", bg: "bg-amber-100", border: "border-amber-300" };
+    default:
+      return { label: "Low Risk", color: "text-yellow-700", bg: "bg-yellow-100", border: "border-yellow-300" };
+  }
 }
 
 function formatDate(dateString: string): string {
@@ -231,6 +237,8 @@ function formatDate(dateString: string): string {
     day: "numeric",
     month: "short",
     year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
@@ -240,129 +248,116 @@ function formatPrice(price: number): string {
   return `₹${price.toLocaleString("en-IN")}`;
 }
 
-function ClientCard({ client }: { client: SuspiciousClient }) {
+function DuplicateImageCard({ group }: { group: DuplicateImageGroup }) {
   const [expanded, setExpanded] = useState(false);
-  const level = getSuspicionLevel(client.suspicion_score);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const riskInfo = getRiskLevelInfo(group.risk_level);
 
-  const handleSuspend = () => {
-    toast.success(`${client.full_name} has been suspended`);
+  const handleSelectUser = (userId: string) => {
+    setSelectedUsers((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+    );
   };
 
-  const handleClearFlag = () => {
-    toast.success(`Flags cleared for ${client.full_name}`);
+  const handleSelectAll = () => {
+    if (selectedUsers.length === group.users.length) {
+      setSelectedUsers([]);
+    } else {
+      setSelectedUsers(group.users.map((u) => u.id));
+    }
+  };
+
+  const handleSuspendSelected = () => {
+    if (selectedUsers.length === 0) {
+      toast.error("Please select at least one user");
+      return;
+    }
+    toast.success(`${selectedUsers.length} account(s) suspended for fraudulent activity`);
+    setSelectedUsers([]);
+  };
+
+  const handleFlagListing = () => {
+    toast.success("All listings with this image have been flagged for review");
+  };
+
+  const handleRemoveListings = () => {
+    if (selectedUsers.length === 0) {
+      toast.error("Please select at least one user");
+      return;
+    }
+    toast.success(`${selectedUsers.length} listing(s) removed from platform`);
+    setSelectedUsers([]);
   };
 
   return (
-    <div className={`bg-white border ${client.suspicion_score >= 50 ? "border-amber-200" : "border-slate-200"} shadow-sm`}>
+    <div className={`bg-white border-2 ${riskInfo.border} shadow-lg overflow-hidden`}>
       {/* Header */}
-      <div className="p-5">
+      <div className="p-5 bg-gradient-to-r from-slate-50 to-white">
         <div className="flex items-start gap-4">
-          {/* Avatar */}
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${
-            client.role === "dealer" ? "bg-purple-100" : "bg-slate-100"
-          }`}>
-            {client.role === "dealer" ? (
-              <Building2 className="w-6 h-6 text-purple-600" />
-            ) : (
-              <User className="w-6 h-6 text-slate-600" />
-            )}
+          {/* Image Preview */}
+          <div className="relative w-32 h-24 bg-slate-100 rounded-lg overflow-hidden shrink-0 border-2 border-slate-200">
+            <Image
+              src={group.image_url}
+              alt="Duplicate car image"
+              fill
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="absolute bottom-1 left-1 flex items-center gap-1 px-1.5 py-0.5 bg-white/90 rounded text-[10px] font-bold text-slate-700">
+              <ImageIcon className="w-3 h-3" />
+              ID: {group.image_hash.slice(0, 8)}
+            </div>
           </div>
 
           {/* Info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-bold text-slate-900">{client.full_name}</h3>
-              <Badge variant={client.role === "dealer" ? "default" : "secondary"}>
-                {client.role}
-              </Badge>
-              {!client.is_active && (
-                <Badge variant="destructive">Suspended</Badge>
-              )}
-              {!client.is_verified && (
-                <Badge variant="outline" className="text-amber-600 border-amber-300">
-                  Unverified
-                </Badge>
-              )}
-            </div>
-            <p className="text-sm text-slate-500 mt-0.5">{client.email}</p>
-            <div className="flex items-center gap-4 mt-2 text-xs text-slate-400">
-              {client.phone && (
-                <span className="flex items-center gap-1">
-                  <Phone className="w-3 h-3" />
-                  {client.phone}
-                </span>
-              )}
-              <span className="flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                Joined {formatDate(client.created_at)}
-              </span>
-              {client.last_login && (
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  Last seen {formatDate(client.last_login)}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Risk Score */}
-          <div className="text-right shrink-0">
-            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${level.bg} ${level.color}`}>
-              {client.suspicion_score >= 50 ? (
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${riskInfo.bg} ${riskInfo.color} border ${riskInfo.border}`}>
                 <ShieldAlert className="w-3.5 h-3.5" />
-              ) : (
-                <Shield className="w-3.5 h-3.5" />
-              )}
-              {level.label}
+                {riskInfo.label}
+              </div>
+              <Badge variant="destructive" className="gap-1">
+                <AlertTriangle className="w-3 h-3" />
+                Duplicate Detected
+              </Badge>
             </div>
-            <p className="text-xs text-slate-400 mt-1">Score: {client.suspicion_score}/100</p>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
+              <div>
+                <p className="text-xs text-slate-500 mb-0.5">Total Uploads</p>
+                <p className="text-lg font-bold text-slate-900">{group.total_uploads}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 mb-0.5">Unique Users</p>
+                <p className="text-lg font-bold text-red-600 flex items-center gap-1">
+                  <Users className="w-4 h-4" />
+                  {group.unique_users}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 mb-0.5">First Upload</p>
+                <p className="text-xs font-semibold text-slate-700">{formatDate(group.first_upload)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 mb-0.5">Last Upload</p>
+                <p className="text-xs font-semibold text-slate-700">{formatDate(group.last_upload)}</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Stats Row */}
-        <div className="flex items-center gap-6 mt-4 pt-4 border-t border-slate-100">
-          <div className="flex items-center gap-2">
-            <Car className="w-4 h-4 text-slate-400" />
-            <span className="text-sm font-medium text-slate-700">{client.total_listings} listings</span>
+        {/* Alert Message */}
+        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-xs font-bold text-red-800 uppercase tracking-wider mb-1">Fraud Detection Alert</p>
+              <p className="text-sm text-red-700">
+                This image has been uploaded by <strong>{group.unique_users} different accounts</strong>, indicating potential fraudulent activity or unauthorized listing duplication.
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-slate-400" />
-            <span className="text-sm font-medium text-slate-700">{client.unique_locations.length} locations</span>
-          </div>
-          {client.flags.multiple_locations && (
-            <span className="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
-              <Flag className="w-3 h-3" />
-              Multi-location
-            </span>
-          )}
-          {client.flags.rapid_posting && (
-            <span className="flex items-center gap-1 text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
-              <AlertTriangle className="w-3 h-3" />
-              Rapid posting
-            </span>
-          )}
-          {client.flags.price_anomaly && (
-            <span className="flex items-center gap-1 text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded">
-              <AlertTriangle className="w-3 h-3" />
-              Price anomaly
-            </span>
-          )}
         </div>
-
-        {/* Suspicion Reasons */}
-        {client.suspicion_reasons.length > 0 && (
-          <div className="mt-4 p-3 bg-amber-50 border border-amber-100 rounded">
-            <p className="text-xs font-bold text-amber-800 uppercase tracking-wider mb-2">Suspicious Activity Detected</p>
-            <ul className="space-y-1">
-              {client.suspicion_reasons.map((reason, i) => (
-                <li key={i} className="text-sm text-amber-700 flex items-start gap-2">
-                  <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                  {reason}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
 
         {/* Actions */}
         <div className="flex items-center gap-2 mt-4">
@@ -373,77 +368,143 @@ function ClientCard({ client }: { client: SuspiciousClient }) {
             className="gap-1"
           >
             <Eye className="w-4 h-4" />
-            View Listings
+            View All Users ({group.users.length})
             {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </Button>
-          {client.is_active && client.suspicion_score >= 50 && (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleSuspend}
-              className="gap-1"
-            >
-              <Ban className="w-4 h-4" />
-              Suspend Account
-            </Button>
-          )}
-          {client.suspicion_score >= 25 && client.suspicion_score < 80 && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleClearFlag}
-              className="gap-1"
-            >
-              <CheckCircle className="w-4 h-4" />
-              Clear Flags
-            </Button>
-          )}
-          <Button variant="ghost" size="sm" className="gap-1 ml-auto">
-            <Mail className="w-4 h-4" />
-            Contact
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleFlagListing}
+            className="gap-1"
+          >
+            <Flag className="w-4 h-4" />
+            Flag All Listings
           </Button>
+          {selectedUsers.length > 0 && (
+            <>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleSuspendSelected}
+                className="gap-1"
+              >
+                <Ban className="w-4 h-4" />
+                Suspend ({selectedUsers.length})
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleRemoveListings}
+                className="gap-1"
+              >
+                <AlertTriangle className="w-4 h-4" />
+                Remove Listings ({selectedUsers.length})
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
-      {/* Expanded Listings */}
+      {/* Expanded User List */}
       {expanded && (
-        <div className="border-t border-slate-100 bg-slate-50 p-5">
-          <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
-            Recent Listings ({client.listings.length} shown of {client.total_listings})
-          </h4>
-          <div className="space-y-2">
-            {client.listings.map((listing) => (
-              <div
-                key={listing.id}
-                className="flex items-center gap-4 bg-white p-3 border border-slate-200 rounded"
-              >
-                <div className={`w-8 h-8 rounded flex items-center justify-center ${
-                  listing.type === "car" ? "bg-blue-50" : "bg-green-50"
-                }`}>
-                  {listing.type === "car" ? (
-                    <Car className={`w-4 h-4 text-blue-600`} />
-                  ) : (
-                    <Bike className={`w-4 h-4 text-green-600`} />
-                  )}
+        <div className="border-t-2 border-slate-200 bg-slate-50">
+          <div className="p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wider">
+                Users Who Uploaded This Image
+              </h4>
+              <Button variant="ghost" size="sm" onClick={handleSelectAll} className="text-xs">
+                {selectedUsers.length === group.users.length ? "Deselect All" : "Select All"}
+              </Button>
+            </div>
+
+            <div className="space-y-3">
+              {group.users.map((user) => (
+                <div
+                  key={user.id}
+                  className={`bg-white border-2 ${
+                    selectedUsers.includes(user.id) ? "border-[#9b111e] bg-red-50" : "border-slate-200"
+                  } rounded-lg p-4 transition-all`}
+                >
+                  <div className="flex items-start gap-3">
+                    {/* Checkbox */}
+                    <input
+                      type="checkbox"
+                      checked={selectedUsers.includes(user.id)}
+                      onChange={() => handleSelectUser(user.id)}
+                      className="mt-1 w-4 h-4 text-[#9b111e] border-slate-300 rounded focus:ring-[#9b111e]"
+                    />
+
+                    {/* Avatar */}
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                      user.role === "dealer" ? "bg-purple-100" : "bg-slate-100"
+                    }`}>
+                      {user.role === "dealer" ? (
+                        <Building2 className="w-5 h-5 text-purple-600" />
+                      ) : (
+                        <User className="w-5 h-5 text-slate-600" />
+                      )}
+                    </div>
+
+                    {/* User Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <h5 className="font-bold text-slate-900">{user.full_name}</h5>
+                        <Badge variant={user.role === "dealer" ? "default" : "secondary"} className="text-xs">
+                          {user.role}
+                        </Badge>
+                        {!user.is_active && <Badge variant="destructive" className="text-xs">Suspended</Badge>}
+                        {!user.is_verified && (
+                          <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">
+                            Unverified
+                          </Badge>
+                        )}
+                      </div>
+
+                      <p className="text-xs text-slate-500 mb-2">{user.email}</p>
+
+                      {/* Listing Info */}
+                      <div className="bg-slate-50 border border-slate-200 rounded p-2 mb-2">
+                        <p className="text-xs font-semibold text-slate-700 mb-1">{user.listing_title}</p>
+                        <div className="flex items-center gap-3 text-xs text-slate-500">
+                          <span className="font-bold text-[#9b111e]">{formatPrice(user.listing_price)}</span>
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            Posted: {formatDate(user.posted_date)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 text-xs text-slate-400">
+                        {user.phone && (
+                          <span className="flex items-center gap-1">
+                            <Phone className="w-3 h-3" />
+                            {user.phone}
+                          </span>
+                        )}
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          Joined {formatDate(user.created_at)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex flex-col gap-1 shrink-0">
+                      <Button variant="ghost" size="sm" className="gap-1 h-8 text-xs">
+                        <ExternalLink className="w-3 h-3" />
+                        View
+                      </Button>
+                      <Button variant="ghost" size="sm" className="gap-1 h-8 text-xs">
+                        <Mail className="w-3 h-3" />
+                        Contact
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-900 truncate">{listing.title}</p>
-                  <p className="text-xs text-slate-500 flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    {listing.location}
-                  </p>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className="text-sm font-bold text-slate-900">{formatPrice(listing.price)}</p>
-                  <p className="text-xs text-slate-400">{formatDate(listing.created_at)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-3 flex gap-2">
-            <p className="text-xs text-slate-500 flex-1">
-              Locations: {client.unique_locations.join(" • ")}
-            </p>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -452,112 +513,129 @@ function ClientCard({ client }: { client: SuspiciousClient }) {
 }
 
 export default function AdminClientsPage() {
-  const [filter, setFilter] = useState<"all" | "high" | "medium" | "safe">("all");
-  const [roleFilter, setRoleFilter] = useState<"all" | "user" | "dealer">("all");
+  const [filter, setFilter] = useState<"all" | "critical" | "high" | "medium" | "low">("all");
 
-  const filteredClients = SUSPICIOUS_CLIENTS.filter((client) => {
-    // Role filter
-    if (roleFilter !== "all" && client.role !== roleFilter) return false;
-
-    // Risk filter
-    if (filter === "high" && client.suspicion_score < 80) return false;
-    if (filter === "medium" && (client.suspicion_score < 50 || client.suspicion_score >= 80)) return false;
-    if (filter === "safe" && client.suspicion_score >= 25) return false;
-
-    return true;
+  const filteredGroups = DUPLICATE_IMAGE_GROUPS.filter((group) => {
+    if (filter === "all") return true;
+    return group.risk_level === filter;
   });
 
-  const highRiskCount = SUSPICIOUS_CLIENTS.filter((c) => c.suspicion_score >= 80).length;
-  const mediumRiskCount = SUSPICIOUS_CLIENTS.filter((c) => c.suspicion_score >= 50 && c.suspicion_score < 80).length;
+  const criticalCount = DUPLICATE_IMAGE_GROUPS.filter((g) => g.risk_level === "critical").length;
+  const highCount = DUPLICATE_IMAGE_GROUPS.filter((g) => g.risk_level === "high").length;
+  const totalDuplicates = DUPLICATE_IMAGE_GROUPS.reduce((sum, g) => sum + g.total_uploads, 0);
+  const totalUsers = DUPLICATE_IMAGE_GROUPS.reduce((sum, g) => sum + g.unique_users, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-black text-slate-900">Risk Monitor</h1>
+          <h1 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+            <ShieldAlert className="w-7 h-7 text-[#9b111e]" />
+            Duplicate Image Detection
+          </h1>
           <p className="text-slate-500 text-sm mt-1">
-            Track high-risk accounts and suspicious activity
+            Identify and take action on fraudulent listings with duplicate car images
           </p>
         </div>
+
         <div className="flex items-center gap-3">
-          {highRiskCount > 0 && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg">
-              <ShieldAlert className="w-4 h-4 text-red-600" />
-              <span className="text-sm font-bold text-red-700">{highRiskCount} High Risk</span>
+          {criticalCount > 0 && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border-2 border-red-300 rounded-lg">
+              <AlertTriangle className="w-4 h-4 text-red-600" />
+              <span className="text-sm font-bold text-red-700">{criticalCount} Critical</span>
             </div>
           )}
-          {mediumRiskCount > 0 && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
-              <AlertTriangle className="w-4 h-4 text-amber-600" />
-              <span className="text-sm font-bold text-amber-700">{mediumRiskCount} Medium Risk</span>
+          {highCount > 0 && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-orange-50 border-2 border-orange-300 rounded-lg">
+              <ShieldAlert className="w-4 h-4 text-orange-600" />
+              <span className="text-sm font-bold text-orange-700">{highCount} High Risk</span>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="bg-white border border-slate-200 rounded-lg p-3">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+              Duplicate Images Found
+            </p>
+            <ImageIcon className="w-4 h-4 text-slate-400" />
+          </div>
+          <p className="text-2xl font-bold text-slate-900">{DUPLICATE_IMAGE_GROUPS.length}</p>
+          <p className="text-[10px] text-slate-500 mt-0.5">Across {totalDuplicates} total uploads</p>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-lg p-3">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+              Suspicious Users
+            </p>
+            <Users className="w-4 h-4 text-slate-400" />
+          </div>
+          <p className="text-2xl font-bold text-red-600">{totalUsers}</p>
+          <p className="text-[10px] text-slate-500 mt-0.5">Uploading same images</p>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-lg p-3">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+              Risk Level
+            </p>
+            <Shield className="w-4 h-4 text-slate-400" />
+          </div>
+          <p className="text-2xl font-bold text-red-600">{criticalCount + highCount}</p>
+          <p className="text-[10px] text-slate-500 mt-0.5">Critical & High risk cases</p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-4 flex-wrap">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-slate-500">Risk Level:</span>
-          <div className="flex gap-1">
-            {[
-              { value: "all", label: "All" },
-              { value: "high", label: "High Risk" },
-              { value: "medium", label: "Medium" },
-              { value: "safe", label: "Safe" },
-            ].map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => setFilter(opt.value as typeof filter)}
-                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
-                  filter === opt.value
-                    ? "bg-[#9b111e] text-white"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-slate-500">Type:</span>
-          <div className="flex gap-1">
-            {[
-              { value: "all", label: "All Users" },
-              { value: "user", label: "Normal Users" },
-              { value: "dealer", label: "Dealers/Agents" },
-            ].map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => setRoleFilter(opt.value as typeof roleFilter)}
-                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
-                  roleFilter === opt.value
-                    ? "bg-[#9b111e] text-white"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
+      <div className="flex items-center gap-4 flex-wrap bg-white border border-slate-200 rounded-lg p-4">
+        <span className="text-sm font-semibold text-slate-700">Filter by Risk Level:</span>
+        <div className="flex gap-2 flex-wrap">
+          {[
+            { value: "all", label: "All Cases" },
+            { value: "critical", label: "Critical" },
+            { value: "high", label: "High" },
+            { value: "medium", label: "Medium" },
+            { value: "low", label: "Low" },
+          ].map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setFilter(opt.value as typeof filter)}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                filter === opt.value
+                  ? "bg-[#9b111e] text-white shadow-md"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Client List */}
-      <div className="space-y-4">
-        {filteredClients.length === 0 ? (
-          <div className="bg-white border border-slate-200 p-12 text-center">
-            <Shield className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
-            <h3 className="text-lg font-bold text-slate-900 mb-1">No suspicious clients found</h3>
-            <p className="text-sm text-slate-500">All clients matching your filters appear to be legitimate.</p>
+      {/* Duplicate Image Groups */}
+      <div className="space-y-6">
+        {filteredGroups.length === 0 ? (
+          <div className="bg-white border border-slate-200 rounded-lg p-12 text-center">
+            <Shield className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-slate-900 mb-2">No duplicate images found</h3>
+            <p className="text-sm text-slate-500">
+              {filter === "all"
+                ? "All uploaded images appear to be unique."
+                : `No ${filter} risk duplicates detected.`}
+            </p>
           </div>
         ) : (
-          filteredClients
-            .sort((a, b) => b.suspicion_score - a.suspicion_score)
-            .map((client) => <ClientCard key={client.id} client={client} />)
+          filteredGroups
+            .sort((a, b) => {
+              const riskOrder = { critical: 4, high: 3, medium: 2, low: 1 };
+              return riskOrder[b.risk_level] - riskOrder[a.risk_level];
+            })
+            .map((group) => <DuplicateImageCard key={group.id} group={group} />)
         )}
       </div>
     </div>

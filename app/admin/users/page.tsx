@@ -50,13 +50,13 @@ export default function AdminUsersPage() {
   const totalPages = Math.ceil(total / SIZE);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full">
       <div>
         <h1 className="text-2xl font-black text-slate-900">Users</h1>
         <p className="text-slate-500 text-sm mt-1">{total} registered users</p>
       </div>
 
-      <div className="bg-white border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white border border-slate-200 shadow-sm overflow-hidden overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50">

@@ -21,6 +21,7 @@ interface AdCreate {
   is_active?: boolean;
   start_date?: string;
   end_date?: string;
+  duration_minutes_per_day?: number;
 }
 
 type AdUpdate = Partial<AdCreate>;
@@ -119,6 +120,7 @@ const DUMMY_LISTINGS: Listing[] = [
     location: "Los Angeles, CA",
     images: ["https://images.unsplash.com/photo-1617531653332-bd46c24f2068?w=800"],
     status: "active",
+    is_featured: true,
     created_at: "2024-03-20T10:00:00Z",
     updated_at: "2024-03-20T10:00:00Z",
   },
@@ -137,6 +139,7 @@ const DUMMY_LISTINGS: Listing[] = [
     location: "San Francisco, CA",
     images: ["https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=800"],
     status: "active",
+    is_featured: true,
     created_at: "2024-03-18T14:30:00Z",
     updated_at: "2024-03-18T14:30:00Z",
   },
@@ -361,6 +364,26 @@ export const adminService = {
     await api.delete(`/admin/listings/${listingId}`);
   },
 
+  async toggleFeatured(listingId: string): Promise<Listing> {
+    if (MOCK_MODE) {
+      const listing = DUMMY_LISTINGS.find((l) => l.id === listingId);
+      if (listing) {
+        listing.is_featured = !listing.is_featured;
+      }
+      return listing!;
+    }
+    const res = await api.put<Listing>(`/admin/listings/${listingId}/featured`);
+    return res.data;
+  },
+
+  async getFeaturedListings(): Promise<Listing[]> {
+    if (MOCK_MODE) {
+      return DUMMY_LISTINGS.filter((l) => l.is_featured && l.status === "active");
+    }
+    const res = await api.get<Listing[]>("/admin/listings/featured");
+    return res.data;
+  },
+
   async listAds(placement?: AdPlacement, page = 1, size = 50): Promise<AdListResponse> {
     if (MOCK_MODE) {
       // Return dummy data in mock mode
@@ -390,6 +413,7 @@ export const adminService = {
         is_active: data.is_active ?? true,
         start_date: data.start_date,
         end_date: data.end_date,
+        duration_minutes_per_day: data.duration_minutes_per_day,
         impressions: 0,
         clicks: 0,
         created_at: new Date().toISOString(),

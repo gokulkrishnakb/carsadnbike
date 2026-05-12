@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Bell, MessageSquare, Plus, ChevronDown,
   LogOut, User, LayoutGrid, Heart, Settings, Menu, LayoutDashboard, Search,
-  X, Sparkles
+  X, Sparkles, Star
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -369,6 +369,7 @@ export function Header() {
                             <div role="group" className="py-2">
                               {[
                                 { href: "/main/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+                                { href: "/main/featured", icon: Star, label: "Featured" },
                                 { href: "/main/profile", icon: User, label: "My Profile" },
                                 { href: "/main/wishlist", icon: Heart, label: "Wishlist" },
                                 { href: "/main/listings", icon: LayoutGrid, label: "My Listings" },

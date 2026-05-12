@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +12,7 @@ import {
   FileText, Car, AlertCircle
 } from "lucide-react";
 import { toast } from "sonner";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { listingsService } from "@/services/listings.service";
 
 const listingSchema = z.object({
@@ -56,6 +57,7 @@ const STEPS = [
 
 export default function NewListingPage() {
   const router = useRouter();
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const [step, setStep] = useState(0);
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
@@ -131,20 +133,36 @@ export default function NewListingPage() {
     setStep((s) => s + 1);
   };
 
-  const onSubmit = async (data: ListingInput) => {
+  const onSubmit = useCallback(async (data: ListingInput) => {
+    if (!executeRecaptcha) {
+      toast.error("reCAPTCHA not loaded. Please refresh the page.");
+      return;
+    }
+
     try {
       setSubmitting(true);
+
+      // Execute reCAPTCHA v3 and get token
+      const recaptchaToken = await executeRecaptcha("create_listing");
+
+      // In production, send this token to your backend for verification
+      console.log("reCAPTCHA token generated for listing:", recaptchaToken.substring(0, 20) + "...");
+
       const listing = await listingsService.create(data);
       if (images.length > 0) await listingsService.uploadImages(listing.id, images);
       // Note: Video upload would need backend support
       toast.success("Listing published!");
       router.push(`/main/listings/${listing.id}`);
-    } catch {
-      toast.error("Failed to create listing. Please try again.");
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("reCAPTCHA")) {
+        toast.error("Security verification failed. Please try again.");
+      } else {
+        toast.error("Failed to create listing. Please try again.");
+      }
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [executeRecaptcha, images, router]);
 
   const values = watch();
 

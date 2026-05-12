@@ -24,6 +24,9 @@ interface AdFormData {
   link_url: string;
   placement: AdPlacement;
   is_active: boolean;
+  start_date: string;
+  end_date: string;
+  duration_minutes_per_day: string;
 }
 
 const EMPTY_FORM: AdFormData = {
@@ -33,6 +36,9 @@ const EMPTY_FORM: AdFormData = {
   link_url: "",
   placement: "homepage",
   is_active: true,
+  start_date: "",
+  end_date: "",
+  duration_minutes_per_day: "",
 };
 
 function AdForm({
@@ -99,6 +105,35 @@ function AdForm({
             className="w-full border border-slate-200 bg-white px-3 py-2 rounded text-sm text-slate-900 focus:outline-none focus:border-[#9b111e] focus:ring-1 focus:ring-red-100"
           />
         </div>
+        <div>
+          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Start Date</label>
+          <input
+            type="date"
+            value={form.start_date}
+            onChange={(e) => set("start_date", e.target.value)}
+            className="w-full border border-slate-200 bg-white px-3 py-2 rounded text-sm text-slate-900 focus:outline-none focus:border-[#9b111e] focus:ring-1 focus:ring-red-100"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">End Date</label>
+          <input
+            type="date"
+            value={form.end_date}
+            onChange={(e) => set("end_date", e.target.value)}
+            className="w-full border border-slate-200 bg-white px-3 py-2 rounded text-sm text-slate-900 focus:outline-none focus:border-[#9b111e] focus:ring-1 focus:ring-red-100"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Duration (Minutes/Day)</label>
+          <input
+            type="number"
+            value={form.duration_minutes_per_day}
+            onChange={(e) => set("duration_minutes_per_day", e.target.value)}
+            placeholder="e.g., 30"
+            min="1"
+            className="w-full border border-slate-200 bg-white px-3 py-2 rounded text-sm text-slate-900 focus:outline-none focus:border-[#9b111e] focus:ring-1 focus:ring-red-100"
+          />
+        </div>
       </div>
       <div className="flex items-center gap-3">
         <label className="flex items-center gap-2 cursor-pointer">
@@ -138,6 +173,9 @@ export default function AdminAdsPage() {
       ...d,
       description: d.description || undefined,
       image_url: d.image_url || undefined,
+      start_date: d.start_date || undefined,
+      end_date: d.end_date || undefined,
+      duration_minutes_per_day: d.duration_minutes_per_day ? parseInt(d.duration_minutes_per_day) : undefined,
     }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-ads"] });
@@ -154,6 +192,9 @@ export default function AdminAdsPage() {
         ...data,
         description: data.description || undefined,
         image_url: data.image_url || undefined,
+        start_date: data.start_date || undefined,
+        end_date: data.end_date || undefined,
+        duration_minutes_per_day: data.duration_minutes_per_day ? parseInt(data.duration_minutes_per_day) : undefined,
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-ads"] });
@@ -177,8 +218,8 @@ export default function AdminAdsPage() {
   const ads = data?.items ?? [];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 w-full">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Advertisements</h1>
           <p className="text-slate-500 text-sm mt-1">{ads.length} ad{ads.length !== 1 ? "s" : ""}</p>
@@ -212,6 +253,9 @@ export default function AdminAdsPage() {
                       link_url: ad.link_url,
                       placement: ad.placement,
                       is_active: ad.is_active,
+                      start_date: ad.start_date ?? "",
+                      end_date: ad.end_date ?? "",
+                      duration_minutes_per_day: ad.duration_minutes_per_day?.toString() ?? "",
                     }}
                     onSave={(d) => updateMutation.mutate({ id: ad.id, data: d })}
                     onCancel={() => setEditId(null)}
@@ -235,6 +279,9 @@ export default function AdminAdsPage() {
                       )}
                       <p className="text-xs text-slate-400 mt-1">
                         {ad.impressions} impressions · {ad.clicks} clicks
+                        {ad.duration_minutes_per_day && ` · ${ad.duration_minutes_per_day} min/day`}
+                        {ad.start_date && ` · ${new Date(ad.start_date).toLocaleDateString()}`}
+                        {ad.end_date && ` - ${new Date(ad.end_date).toLocaleDateString()}`}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">

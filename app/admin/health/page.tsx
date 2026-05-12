@@ -115,9 +115,9 @@ export default function HealthAndSupportPage() {
   ];
 
   return (
-    <div className="max-w-7xl">
+    <div className="w-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
             <HeartPulse className="w-8 h-8 text-[#9b111e]" />
